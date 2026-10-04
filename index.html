@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎰 Casino Royale</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:radial-gradient(circle at 50% 0%,#153a24 0%,#0a140d 45%,#000 100%);color:#eee;min-height:100vh;padding:14px;}
+header{max-width:1000px;margin:0 auto 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:2px solid #d4af3755;padding-bottom:12px;}
+h1{font-size:clamp(20px,4vw,32px);letter-spacing:2px;background:linear-gradient(180deg,#ffe58a,#d4af37,#8a6d1a);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 24px #d4af3744;}
+.balance{font-size:clamp(15px,2.5vw,20px);background:#00000066;border:1px solid #d4af3755;padding:8px 18px;border-radius:30px;font-weight:700;}
+.balance span{color:#ffd75e}
+.audio-ctrl{display:flex;gap:8px}
+.audio-ctrl button{background:linear-gradient(180deg,#2a3d30,#0d1510);color:#cfe6d6;border:1px solid #2f4636;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;transition:.15s;}
+.audio-ctrl button:hover{border-color:#d4af37;color:#ffd75e}
+.audio-ctrl button.off{opacity:.5}
+nav{max-width:1000px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+nav button{background:linear-gradient(180deg,#1e2b22,#0d1510);color:#cfe6d6;border:1px solid #2f4636;padding:9px 14px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;transition:.18s;white-space:nowrap;}
+nav button:hover{border-color:#d4af37;color:#ffd75e;transform:translateY(-2px)}
+nav button.active{background:linear-gradient(180deg,#d4af37,#8a6d1a);color:#12180f;border-color:#ffe58a;box-shadow:0 0 18px #d4af3766;}
+main{max-width:1000px;margin:0 auto}
+.game{display:none;animation:fade .3s ease}
+.game.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel{background:linear-gradient(180deg,#13201899,#0a120d99);border:1px solid #2c4433;border-radius:16px;padding:18px;box-shadow:0 10px 40px #00000088, inset 0 1px 0 #ffffff0d;}
+h2{font-size:20px;color:#ffd75e;margin-bottom:12px;letter-spacing:1px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.btn{background:linear-gradient(180deg,#2ecc71,#1e7a45);color:#04140b;border:none;padding:11px 20px;border-radius:10px;font-weight:800;cursor:pointer;font-size:14px;transition:.15s;letter-spacing:.5px;}
+.btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-2px)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn.gold{background:linear-gradient(180deg,#ffe58a,#d4af37);color:#1a1405}
+.btn.red{background:linear-gradient(180deg,#ff6b6b,#b32d2d);color:#fff}
+.btn.grey{background:linear-gradient(180deg,#4a5a50,#2a3530);color:#cfe6d6}
+.btn.blue{background:linear-gradient(180deg,#6bb6ff,#2d72b3);color:#02121e}
+input[type=number]{background:#050906;border:1px solid #2f4636;color:#ffd75e;padding:10px;border-radius:10px;width:110px;font-size:15px;font-weight:700;text-align:center;}
+.msg{margin-top:14px;font-size:16px;font-weight:700;min-height:24px;color:#ffd75e}
+.msg.win{color:#5dff9a}.msg.lose{color:#ff7b7b}
+.cards{display:flex;gap:8px;flex-wrap:wrap;min-height:110px;align-items:center}
+.card{width:62px;height:90px;border-radius:9px;background:#fff;color:#111;display:flex;flex-direction:column;justify-content:space-between;padding:6px;font-weight:800;font-size:17px;box-shadow:0 4px 12px #000a;animation:deal .3s ease;position:relative;flex-shrink:0;}
+@keyframes deal{from{opacity:0;transform:translateY(-25px) rotate(-8deg)}to{opacity:1;transform:none}}
+.card .suit{font-size:22px;text-align:right}
+.card.red{color:#d32f2f}
+.card.back{background:repeating-linear-gradient(45deg,#1b3a6b,#1b3a6b 6px,#12294d 6px,#12294d 12px);border:2px solid #d4af37;}
+.card.back::after{content:'★';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#d4af37;font-size:24px}
+.hand-label{color:#8fae9c;font-size:13px;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
+.ai-panel{background:#0d1a2c;border:1px solid #2d4a6b;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;}
+.ai-panel .ai-avatar{font-size:26px}
+.ai-panel .ai-status{color:#9ec9ae;font-style:italic}
+.history{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;min-height:24px;align-items:center}
+.history span{font-size:12px;padding:3px 9px;border-radius:20px;background:#00000066;border:1px solid #2f4636;color:#9ec9ae}
+.history span.hi{color:#ffd75e;border-color:#d4af3766}
+small.hint{color:#7d9a89;font-size:12px;display:block;margin-top:6px}
+select{background:#050906;border:1px solid #2f4636;color:#ffd75e;padding:10px;border-radius:10px;font-weight:700;font-size:14px}
+.crash-area{position:relative;height:220px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#03080a,#0a1418);border:1px solid #1e3438;margin:8px 0;}
+.crash-area::before{content:'';position:absolute;inset:0;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:40px 40px;}
+.crash-rocket{position:absolute;font-size:44px;filter:drop-shadow(0 0 14px #ffd75e88);left:0;bottom:0;transform:translate(-50%,50%);z-index:2;}
+.crash-trail{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,transparent,#ffd75e,#ff6b6b);box-shadow:0 0 18px #ffd75e;}
+.crash-display{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-size:clamp(36px,9vw,64px);font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-2px;background:linear-gradient(180deg,#fff,#ffd75e,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent;z-index:3;}
+.crash-display.crashed{background:linear-gradient(180deg,#ff9a9a,#d32f2f);-webkit-background-clip:text;background-clip:text;}
+.crash-display.cashed{background:linear-gradient(180deg,#b6ffb6,#2ecc71);-webkit-background-clip:text;background-clip:text;}
+.wheel-wrap{position:relative;width:min(430px,92vw);aspect-ratio:1;margin:14px auto 4px;padding:8px;}
+.pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-top:38px solid #ffd75e;z-index:10;filter:drop-shadow(0 4px 10px #000) drop-shadow(0 0 8px #ffd75e88);}
+.pointer::after{content:'';position:absolute;top:-6px;left:-10px;width:20px;height:6px;background:#d4af37;border-radius:4px;}
+.wheel-svg{width:100%;height:100%;display:block;border-radius:50%;transform-origin:center center;transition:transform 6s cubic-bezier(.15,.6,.1,1);background:#0a120d;box-shadow:0 0 60px #d4af3722,0 0 0 8px #1a1405,0 0 0 11px #d4af37,0 0 0 15px #0a120d,0 0 40px #d4af3766,inset 0 0 60px #00000088;}
+.wheel-wrap.spinning .wheel-svg{box-shadow:0 0 100px #ffd75e55,0 0 0 8px #1a1405,0 0 0 11px #ffe58a,0 0 0 15px #0a120d,0 0 60px #ffd75eaa,inset 0 0 60px #00000088;}
+.wheel-wrap.win .wheel-svg{animation:wheelWin .9s ease 3;}
+@keyframes wheelWin{0%,100%{filter:brightness(1)}50%{filter:brightness(1.6) drop-shadow(0 0 35px #ffd75e)}}
+.wheel-picker{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.wheel-picker button{display:flex;flex-direction:column;align-items:center;gap:3px;background:#0d1510;border:2px solid #2f4636;color:#cfe6d6;padding:10px 18px;border-radius:12px;cursor:pointer;font-weight:900;transition:.15s;min-width:76px;}
+.wheel-picker button:hover:not(:disabled){border-color:#d4af37;transform:translateY(-2px)}
+.wheel-picker button .mult{font-size:20px;line-height:1}
+.wheel-picker button .chance{font-size:11px;opacity:.75;font-weight:700}
+.wheel-picker button.sel{background:linear-gradient(180deg,#ffe58a,#d4af37);color:#12180f;border-color:#ffe58a;box-shadow:0 0 22px #d4af3766;transform:translateY(-2px)}
+.wheel-picker button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.lane{position:relative;height:52px;background:#0a120d;border:1px solid #2c4433;border-radius:9px;margin-bottom:8px;overflow:hidden;}
+.lane .finish-line{position:absolute;top:0;bottom:0;width:8px;background:repeating-linear-gradient(0deg,#fff 0 6px,#000 6px 12px);opacity:.55;right:4%;}
+.lane .progress-bar{position:absolute;top:0;bottom:0;left:0;width:0;background:linear-gradient(90deg,transparent,#2ecc7122);}
+.horse{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:28px;left:2%;will-change:left}
+.lane-num{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;color:#5c7a68;font-weight:800;z-index:2}
+.lane-odds{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;color:#9ec9ae;font-weight:800;z-index:2}
+.horse-pick{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;justify-content:center}
+.horse-pick button{background:#0d1510;border:1px solid #2f4636;color:#cfe6d6;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;transition:.15s;font-size:13px;}
+.horse-pick button:hover{border-color:#d4af37}
+.horse-pick button.sel{background:linear-gradient(180deg,#d4af37,#8a6d1a);color:#12180f;border-color:#ffe58a}
+.mine-stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;background:#00000055;border:1px solid #2c4433;border-radius:12px;padding:12px;margin:10px 0;font-weight:700;}
+.mine-stats div{text-align:center;min-width:90px}
+.mine-stats .lbl{font-size:11px;color:#8fae9c;text-transform:uppercase;letter-spacing:1px}
+.mine-stats .val{font-size:20px;color:#ffd75e}
+.mine-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-width:360px;margin:12px auto;}
+.tile{aspect-ratio:1;border-radius:10px;background:linear-gradient(180deg,#2b3d31,#16241b);border:1px solid #3a5244;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;transition:.12s;color:#fff;user-select:none;}
+.tile:hover:not(.revealed){transform:scale(1.06);border-color:#d4af37}
+.tile.revealed{cursor:default;background:#0d1510;border-color:#1e2b22}
+.tile.revealed.safe{background:#123a24;border-color:#2ecc7155}
+.tile.mine{background:#4a1414;border-color:#ff6b6b}
+.slots{display:flex;gap:12px;justify-content:center;margin:14px 0}
+.reel{width:88px;height:110px;background:linear-gradient(180deg,#fffef5,#e8e2c8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:52px;box-shadow:inset 0 -8px 18px #0002,0 5px 18px #000a;border:3px solid #d4af37;}
+.reel.spin{animation:reelspin .09s linear infinite}
+@keyframes reelspin{0%{transform:translateY(-4px)}50%{transform:translateY(4px)}100%{transform:translateY(-4px)}}
+.poker-table{background:radial-gradient(ellipse at center,#1a6b3d,#0d3d22 70%,#071d10);border:3px solid #8a6d1a;border-radius:20px;padding:20px;box-shadow:inset 0 0 60px #00000088,0 10px 30px #00000099;position:relative;}
+.poker-hand{display:flex;flex-direction:column;align-items:center;margin:8px 0;}
+.poker-hand .hand-label{color:#c9e6d6;text-shadow:0 1px 3px #000}
+.poker-info-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#00000088;border:1px solid #d4af3755;border-radius:12px;padding:10px 16px;margin:12px 0;font-weight:800;}
+.poker-info-bar span.val{color:#ffd75e}
+.poker-pot{text-align:center;font-size:22px;font-weight:900;color:#ffd75e;text-shadow:0 0 12px #d4af37aa;margin:8px 0;}
+.community-zone{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;min-height:96px;align-items:center;}
+/* ROULETTE */
+.roulette-layout{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.roulette-wheel-wrap{position:relative;width:min(280px,72vw);aspect-ratio:1;margin:0 auto;}
+.roulette-wheel{width:100%;height:100%;border-radius:50%;transition:transform 5s cubic-bezier(.15,.6,.1,1);box-shadow:0 0 30px #d4af3766,0 0 0 5px #1a1405,0 0 0 8px #d4af37,0 0 0 12px #0a120d;}
+.roulette-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid #ffd75e;z-index:5;filter:drop-shadow(0 3px 6px #000);}
+.roulette-result{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:72px;height:72px;border-radius:50%;
+  font-size:32px;font-weight:900;color:#fff;
+  border:4px solid #d4af37;
+  box-shadow:0 0 40px #d4af37aa,inset 0 0 25px #000a;
+  transition:.3s;padding:0 14px;
+  background:#1a1a1a;
+  text-shadow:0 2px 6px #000;
+}
+.roulette-result.red{background:linear-gradient(180deg,#e74c3c,#a02418);box-shadow:0 0 40px #e74c3ccc,inset 0 0 25px #000a;}
+.roulette-result.black{background:linear-gradient(180deg,#2a2a2a,#050505);box-shadow:0 0 40px #000000aa,inset 0 0 25px #000a;}
+.roulette-result.green{background:linear-gradient(180deg,#27ae60,#0f5c2d);box-shadow:0 0 40px #27ae60cc,inset 0 0 25px #000a;}
+.roulette-result.spinning{animation:rspin .12s linear infinite;}
+@keyframes rspin{0%{transform:rotate(-6deg) scale(.96)}50%{transform:rotate(6deg) scale(1.04)}100%{transform:rotate(-6deg) scale(.96)}}
+.roulette-result.landed{animation:landed .5s ease;}
+@keyframes landed{0%{transform:scale(1.4)}100%{transform:scale(1)}}
+.roulette-board{
+  display:grid;
+  grid-template-columns:1.3fr repeat(12,1fr);
+  grid-template-rows:repeat(3,minmax(28px,auto));
+  gap:2px;
+  max-width:min(680px,96vw);width:100%;
+  margin:0 auto;padding:5px;
+  background:#0a3a1e;border-radius:8px;border:2px solid #8a6d1a;
+}
+.rn{
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:clamp(9px,1.5vw,13px);
+  color:#fff;border-radius:4px;cursor:pointer;
+  border:1px solid #00000055;transition:.1s;user-select:none;
+  padding:5px 2px;min-height:28px;
+}
+.rn:hover{filter:brightness(1.3);transform:scale(1.08);z-index:2}
+.rn.red{background:#c0392b}
+.rn.black{background:#1a1a1a}
+.rn.green{background:#1e7a45}
+.rn-zero{grid-row:1/4;grid-column:1;}
+.rn.sel{box-shadow:0 0 0 2px #ffd75e,0 0 12px #ffd75eaa;z-index:3}
+.rn.winner{
+  animation:winnerPulse 0.6s ease 4;
+  box-shadow:0 0 0 3px #ffd75e,0 0 30px #ffd75e,0 0 50px #ffd75eaa;
+  z-index:4;position:relative;
+}
+@keyframes winnerPulse{
+  0%,100%{transform:scale(1);filter:brightness(1)}
+  50%{transform:scale(1.25);filter:brightness(1.7)}
+}
+.roulette-quick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.roulette-quick button{background:#0d1510;border:1px solid #2f4636;color:#cfe6d6;padding:7px 11px;border-radius:9px;cursor:pointer;font-weight:800;transition:.15s;font-size:12px;}
+.roulette-quick button:hover:not(:disabled){border-color:#d4af37}
+.roulette-quick button.sel{background:linear-gradient(180deg,#d4af37,#8a6d1a);color:#12180f;border-color:#ffe58a}
+.roulette-quick button.red-b{background:linear-gradient(180deg,#c0392b,#7a1f16);color:#fff}
+.roulette-quick button.black-b{background:linear-gradient(180deg,#2a2a2a,#0a0a0a);color:#fff}
+.roulette-quick button:disabled{opacity:.5;cursor:not-allowed}
+.history span.h-red{background:#c0392b;border-color:#e74c3c;color:#fff}
+.history span.h-black{background:#1a1a1a;border-color:#444;color:#fff}
+.history span.h-green{background:#1e7a45;border-color:#27ae60;color:#fff}
+/* PLINKO */
+.plinko-stage{position:relative;max-width:660px;margin:14px auto;border-radius:16px;overflow:hidden;border:2px solid #1e3438;background:linear-gradient(180deg,#0a1418,#03080a);box-shadow:0 10px 40px #00000088,inset 0 0 80px #000000aa;}
+.plinko-canvas{display:block;width:100%;height:auto;}
+/* HI-LO */
+.hilo-card-wrap{display:flex;justify-content:center;gap:20px;align-items:center;margin:20px 0;flex-wrap:wrap;}
+.hilo-card-wrap .card{width:100px;height:145px;font-size:26px}
+.hilo-card-wrap .card .suit{font-size:34px}
+.hilo-streak{text-align:center;font-size:48px;font-weight:900;margin:10px 0;background:linear-gradient(180deg,#fff,#ffd75e,#c99a1e);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-2px;}
+.hilo-stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;background:#00000055;border:1px solid #2c4433;border-radius:12px;padding:12px;margin:10px 0;font-weight:700;}
+.hilo-stats div{text-align:center;min-width:100px}
+.hilo-stats .lbl{font-size:11px;color:#8fae9c;text-transform:uppercase;letter-spacing:1px}
+.hilo-stats .val{font-size:20px;color:#ffd75e}
+/* BACCARAT */
+.baccarat-table{background:radial-gradient(ellipse at center,#1a4d6b,#0d2a3d 70%,#071520);border:3px solid #8a6d1a;border-radius:20px;padding:20px;box-shadow:inset 0 0 60px #00000088,0 10px 30px #00000099;}
+.baccarat-side{display:flex;flex-direction:column;gap:6px;margin:10px 0;align-items:center}
+.baccarat-side .hand-label{color:#c9e6d6;text-shadow:0 1px 3px #000;font-size:14px}
+.baccarat-score{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:38px;border-radius:8px;background:#000000aa;border:1px solid #d4af3755;font-weight:900;font-size:20px;color:#ffd75e;padding:0 10px;margin-left:8px;}
+.baccarat-pick{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.baccarat-pick button{padding:12px 22px;border-radius:12px;border:2px solid #2f4636;background:#0d1510;color:#cfe6d6;cursor:pointer;font-weight:900;font-size:14px;transition:.15s;letter-spacing:.5px;}
+.baccarat-pick button:hover:not(:disabled){border-color:#d4af37;transform:translateY(-2px)}
+.baccarat-pick button.sel{background:linear-gradient(180deg,#ffe58a,#d4af37);color:#12180f;border-color:#ffe58a;box-shadow:0 0 22px #d4af3766;transform:translateY(-2px)}
+.baccarat-pick button:disabled{opacity:.4;cursor:not-allowed}
+/* DICE */
+.dice-display{display:flex;justify-content:center;gap:24px;margin:24px 0;align-items:center;}
+.die{font-size:clamp(72px,15vw,110px);line-height:1;filter:drop-shadow(0 6px 16px #000c);transition:.2s;color:#ffd75e;}
+.die.rolling{animation:diceRoll .09s linear infinite;}
+@keyframes diceRoll{0%{transform:rotate(-18deg) scale(.88)}50%{transform:rotate(18deg) scale(1.08)}100%{transform:rotate(-18deg) scale(.88)}}
+.dice-sum{font-size:44px;font-weight:900;color:#ffd75e;text-shadow:0 0 20px #d4af37aa;margin:0 20px;}
+.dice-bets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0;}
+.dice-bets button{background:#0d1510;border:2px solid #2f4636;color:#cfe6d6;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:800;font-size:13px;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:80px;}
+.dice-bets button:hover:not(:disabled){border-color:#d4af37;transform:translateY(-2px)}
+.dice-bets button.sel{background:linear-gradient(180deg,#d4af37,#8a6d1a);color:#12180f;border-color:#ffe58a;box-shadow:0 0 22px #d4af3766;transform:translateY(-2px)}
+.dice-bets button:disabled{opacity:.5;cursor:not-allowed}
+.dice-bets button .lbl{font-size:13px;line-height:1;}
+.dice-bets button .pay{font-size:11px;opacity:.75;font-weight:700;}
+/* KENO */
+.keno-board{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;max-width:min(480px,96vw);margin:14px auto;}
+.keno-num{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:clamp(11px,2vw,15px);background:#0d1510;border:2px solid #2f4636;color:#cfe6d6;border-radius:8px;cursor:pointer;user-select:none;transition:.15s;}
+.keno-num:hover:not(.drawn){border-color:#d4af37;transform:scale(1.08);}
+.keno-num.picked{background:linear-gradient(180deg,#d4af37,#8a6d1a);color:#12180f;border-color:#ffe58a;box-shadow:0 0 14px #d4af3766;}
+.keno-num.drawn{background:linear-gradient(180deg,#2980b9,#1a4a6b);color:#fff;border-color:#6bb6ff;cursor:default;}
+.keno-num.hit{background:linear-gradient(180deg,#2ecc71,#1e7a45);color:#04140b;border-color:#5dff9a;box-shadow:0 0 18px #2ecc71aa;animation:kenoPulse .5s ease 2;}
+@keyframes kenoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.keno-stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;background:#00000055;border:1px solid #2c4433;border-radius:12px;padding:12px;margin:10px 0;font-weight:700;}
+.keno-stats div{text-align:center;min-width:90px;}
+.keno-stats .lbl{font-size:11px;color:#8fae9c;text-transform:uppercase;letter-spacing:1px}
+.keno-stats .val{font-size:20px;color:#ffd75e}
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-140%);background:linear-gradient(180deg,#ffe58a,#d4af37);color:#12180f;font-weight:900;padding:12px 26px;border-radius:30px;z-index:999;transition:.35s;box-shadow:0 10px 30px #000a;font-size:15px;}
+#toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎰 CASINO ROYALE</h1>
+  <div class="audio-ctrl">
+    <button id="musicToggle" title="Фоновая музыка">🎵 Музыка</button>
+    <button id="sfxToggle" title="Звуковые эффекты">🔊 Звук</button>
+  </div>
+  <div class="balance">Баланс: <span id="balance">1000</span> ₽</div>
+</header>
+
+<nav id="nav">
+  <button data-game="blackjack" class="active">🃏 Блекджек</button>
+  <button data-game="poker">♠️ Покер</button>
+  <button data-game="baccarat">🎴 Баккара</button>
+  <button data-game="roulette">🎡 Рулетка</button>
+  <button data-game="dice">🎲 Кости</button>
+  <button data-game="keno">🎟️ Кено</button>
+  <button data-game="crash">🚀 Краш</button>
+  <button data-game="wheel">🎯 Колесо</button>
+  <button data-game="plinko">🔴 Плинко</button>
+  <button data-game="hilo">🃏 Hi-Lo</button>
+  <button data-game="horses">🐎 Скачки</button>
+  <button data-game="mines">💣 Сапёр</button>
+  <button data-game="slots">🍒 Слоты</button>
+  <button id="resetBtn" style="background:#3a1414;border-color:#6b2d2d;color:#ff9a9a">↺ Сброс</button>
+</nav>
+
+<main>
+
+<section id="blackjack" class="game active">
+  <div class="panel">
+    <h2>🃏 Блекджек</h2>
+    <div class="hand-label">Дилер: <span id="dealerScore">—</span></div>
+    <div class="cards" id="dealerCards"></div>
+    <div class="hand-label" style="margin-top:16px">🤖 ИИ-игрок: <span id="aiScore">—</span></div>
+    <div class="cards" id="aiCards"></div>
+    <div class="ai-panel"><span class="ai-avatar">🤖</span><span class="ai-status" id="aiStatus">Ожидание раздачи...</span></div>
+    <div class="hand-label" style="margin-top:16px">👤 Вы: <span id="playerScore">—</span></div>
+    <div class="cards" id="playerCards"></div>
+    <div class="row">
+      <input type="number" id="bjBet" value="50" min="10" step="10">
+      <button class="btn gold" id="bjDeal">Раздать</button>
+      <button class="btn" id="bjHit" disabled>Ещё</button>
+      <button class="btn red" id="bjStand" disabled>Хватит</button>
+      <button class="btn grey" id="bjDouble" disabled>Удвоить</button>
+    </div>
+    <div class="msg" id="bjMsg">Ставка: 50 ₽ • Блекджек платит 3:2</div>
+  </div>
+</section>
+
+<section id="poker" class="game">
+  <div class="panel">
+    <h2>♠️ Техасский Холдем — против ИИ</h2>
+    <div class="poker-table">
+      <div class="poker-hand">
+        <div class="hand-label">🤖 ИИ-соперник <span id="pkAiHandName"></span></div>
+        <div class="cards" id="pkAiCards" style="justify-content:center"></div>
+      </div>
+      <div class="poker-pot">Банк: <span id="pkPot">0</span> ₽</div>
+      <div class="poker-hand">
+        <div class="hand-label">Общие карты (<span id="pkStage">—</span>)</div>
+        <div class="community-zone" id="pkCommunity"></div>
+      </div>
+      <div class="poker-hand">
+        <div class="hand-label">👤 Ваши карты <span id="pkMyHandName"></span></div>
+        <div class="cards" id="pkPlayerCards" style="justify-content:center"></div>
+      </div>
+    </div>
+    <div class="poker-info-bar">
+      <div>Ваша ставка: <span class="val" id="pkMyBet">0</span> ₽</div>
+      <div>Ставка ИИ: <span class="val" id="pkAiBet">0</span> ₽</div>
+      <div>Раунд: <span class="val" id="pkRoundName">—</span></div>
+    </div>
+    <div class="ai-panel"><span class="ai-avatar">🤖</span><span class="ai-status" id="pkAiStatus">Нажмите «Новая раздача»</span></div>
+    <div class="row" style="justify-content:center">
+      <input type="number" id="pkBet" value="50" min="10" step="10">
+      <button class="btn gold" id="pkNew">Новая раздача</button>
+      <button class="btn grey" id="pkCheck" disabled>Чек</button>
+      <button class="btn blue" id="pkCall" disabled>Колл</button>
+      <button class="btn" id="pkRaise" disabled>Рейз</button>
+      <button class="btn red" id="pkFold" disabled>Фолд</button>
+    </div>
+    <div class="msg" id="pkMsg">Хедз-ап Холдем: вы против ИИ.</div>
+  </div>
+</section>
+
+<section id="baccarat" class="game">
+  <div class="panel">
+    <h2>🎴 Баккара</h2>
+    <div class="baccarat-table">
+      <div class="baccarat-side">
+        <div class="hand-label">🏦 Банкир <span class="baccarat-score" id="bcBankerScore">—</span></div>
+        <div class="cards" id="bcBankerCards" style="justify-content:center"></div>
+      </div>
+      <div class="baccarat-side">
+        <div class="hand-label">👤 Игрок <span class="baccarat-score" id="bcPlayerScore">—</span></div>
+        <div class="cards" id="bcPlayerCards" style="justify-content:center"></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#8fae9c;font-size:13px;margin-top:16px;letter-spacing:1px;text-transform:uppercase">На что ставите?</div>
+    <div class="baccarat-pick" id="bcPicker">
+      <button data-pick="player">👤 Игрок ×2</button>
+      <button data-pick="banker">🏦 Банкир ×1.95</button>
+      <button data-pick="tie">🤝 Ничья ×8</button>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <input type="number" id="bcBet" value="50" min="10" step="10">
+      <button class="btn gold" id="bcDeal" disabled>Раздать</button>
+    </div>
+    <div class="msg" id="bcMsg" style="text-align:center">Выберите ставку и нажмите «Раздать»</div>
+  </div>
+</section>
+
+<section id="roulette" class="game">
+  <div class="panel">
+    <h2>🎡 Европейская рулетка</h2>
+    <div class="roulette-layout">
+      <div class="roulette-wheel-wrap">
+        <div class="roulette-pointer"></div>
+        <svg class="roulette-wheel" id="rlWheel" viewBox="-160 -160 320 320" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="roulette-result" id="rlResult">—</div>
+      <div class="roulette-board" id="rlBoard"></div>
+      <div class="roulette-quick" id="rlQuick">
+        <button class="red-b" data-bet="red">🔴 Красное ×2</button>
+        <button class="black-b" data-bet="black">⚫ Чёрное ×2</button>
+        <button data-bet="even">Чёт ×2</button>
+        <button data-bet="odd">Нечет ×2</button>
+        <button data-bet="low">1-18 ×2</button>
+        <button data-bet="high">19-36 ×2</button>
+        <button data-bet="d1">1-я дюж. ×3</button>
+        <button data-bet="d2">2-я дюж. ×3</button>
+        <button data-bet="d3">3-я дюж. ×3</button>
+      </div>
+      <div class="row" style="justify-content:center">
+        <input type="number" id="rlBet" value="50" min="10" step="10">
+        <button class="btn gold" id="rlSpin" disabled>🎡 Крутить</button>
+      </div>
+      <div class="msg" id="rlMsg" style="text-align:center;margin-top:4px">Выберите ставку на поле или кнопкой ниже</div>
+      <div class="history" id="rlHistory"></div>
+    </div>
+  </div>
+</section>
+
+<section id="dice" class="game">
+  <div class="panel">
+    <h2>🎲 Кости (Сумма)</h2>
+    <div class="dice-display">
+      <div class="die" id="die1">⚀</div>
+      <div class="dice-sum" id="diceSum">= ?</div>
+      <div class="die" id="die2">⚀</div>
+    </div>
+    <div style="text-align:center;color:#8fae9c;font-size:13px;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">Выберите ставку:</div>
+    <div class="dice-bets" id="diceBets">
+      <button data-bet="small"><span class="lbl">Малая</span><span class="pay">2-6 · ×2</span></button>
+      <button data-bet="big"><span class="lbl">Большая</span><span class="pay">8-12 · ×2</span></button>
+      <button data-bet="odd"><span class="lbl">Нечёт</span><span class="pay">×2</span></button>
+      <button data-bet="even"><span class="lbl">Чёт</span><span class="pay">×2</span></button>
+      <button data-bet="seven"><span class="lbl">Сумма 7</span><span class="pay">×5</span></button>
+      <button data-bet="double"><span class="lbl">Дубль</span><span class="pay">×8</span></button>
+      <button data-bet="snake"><span class="lbl">1-1 🐍</span><span class="pay">×30</span></button>
+      <button data-bet="boxcars"><span class="lbl">6-6 🚂</span><span class="pay">×30</span></button>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:8px">
+      <input type="number" id="diceBet" value="50" min="10" step="10">
+      <button class="btn gold" id="diceRoll" disabled>🎲 Бросить</button>
+    </div>
+    <div class="msg" id="diceMsg" style="text-align:center">Выберите тип ставки и нажмите «Бросить»</div>
+  </div>
+</section>
+
+<section id="keno" class="game">
+  <div class="panel">
+    <h2>🎟️ Кено</h2>
+    <div style="text-align:center;color:#8fae9c;font-size:13px;margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">Выберите 5 чисел из 40:</div>
+    <div class="keno-board" id="kenoBoard"></div>
+    <div class="keno-stats">
+      <div><div class="lbl">Выбрано</div><div class="val" id="kenoPicked">0 / 5</div></div>
+      <div><div class="lbl">Совпало</div><div class="val" id="kenoHits">—</div></div>
+      <div><div class="lbl">Выплата</div><div class="val" id="kenoPay">—</div></div>
+    </div>
+    <div class="row" style="justify-content:center">
+      <input type="number" id="kenoBet" value="50" min="10" step="10">
+      <button class="btn grey" id="kenoClear">Очистить</button>
+      <button class="btn gold" id="kenoDraw" disabled>🎟️ Разыграть</button>
+    </div>
+    <div class="msg" id="kenoMsg" style="text-align:center">Совпадения: 5/5 → ×2000 • 4/5 → ×75 • 3/5 → ×6 • 2/5 → ×1</div>
+    <div class="history" id="kenoHistory"></div>
+  </div>
+</section>
+
+<section id="crash" class="game">
+  <div class="panel">
+    <h2>🚀 Краш</h2>
+    <div class="crash-area" id="crashArea">
+      <div class="crash-trail" id="crTrail"></div>
+      <div class="crash-rocket" id="crRocket">🚀</div>
+      <div class="crash-display" id="crMult">1.00x</div>
+    </div>
+    <div class="row" style="justify-content:center">
+      <input type="number" id="crBet" value="50" min="10" step="10">
+      <button class="btn gold" id="crStart">🚀 Запуск</button>
+      <button class="btn red" id="crCash" disabled>💰 Забрать</button>
+    </div>
+    <div class="msg" id="crMsg" style="text-align:center">Забери до взрыва!</div>
+    <div class="history" id="crHistory"></div>
+  </div>
+</section>
+
+<section id="wheel" class="game">
+  <div class="panel">
+    <h2>🎯 Колесо Фортуны</h2>
+    <div class="wheel-wrap" id="wheelWrap">
+      <div class="pointer"></div>
+      <svg class="wheel-svg" id="wheelSvg" viewBox="-160 -160 320 320" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div style="text-align:center;color:#8fae9c;font-size:13px;margin-top:16px;letter-spacing:1px;text-transform:uppercase">Выберите множитель:</div>
+    <div class="wheel-picker" id="wheelPicker"></div>
+    <div class="row" style="justify-content:center;margin-top:16px">
+      <input type="number" id="whBet" value="50" min="10" step="10">
+      <button class="btn gold" id="whSpin" disabled>🎡 Крутить</button>
+    </div>
+    <div class="msg" id="whMsg" style="text-align:center">Выберите множитель!</div>
+  </div>
+</section>
+
+<section id="plinko" class="game">
+  <div class="panel">
+    <h2>🔴 Плинко</h2>
+    <div class="row" style="justify-content:center">
+      <span style="color:#8fae9c">Риск:</span>
+      <select id="plRisk">
+        <option value="low">🟢 Низкий</option>
+        <option value="mid" selected>🟡 Средний</option>
+        <option value="high">🔴 Высокий</option>
+      </select>
+      <span style="color:#8fae9c">Рядов:</span>
+      <select id="plRows">
+        <option value="8">8</option>
+        <option value="12" selected>12</option>
+        <option value="16">16</option>
+      </select>
+    </div>
+    <div class="plinko-stage">
+      <canvas id="plCanvas" class="plinko-canvas" width="620" height="480"></canvas>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:12px">
+      <input type="number" id="plBet" value="50" min="10" step="10">
+      <button class="btn gold" id="plDrop">🔴 Бросить шар</button>
+      <button class="btn grey" id="plAuto">×10 авто</button>
+    </div>
+    <div class="msg" id="plMsg" style="text-align:center">Бросьте шар — он упадёт в слот с множителем!</div>
+    <div class="history" id="plHistory"></div>
+  </div>
+</section>
+
+<section id="hilo" class="game">
+  <div class="panel">
+    <h2>🃏 Hi-Lo</h2>
+    <div class="hilo-streak" id="hlStreak">×1.00</div>
+    <div class="hilo-card-wrap">
+      <div id="hlCurrentCard"></div>
+      <div style="font-size:38px;color:#ffd75e">→</div>
+      <div id="hlNextCard"></div>
+    </div>
+    <div class="hilo-stats">
+      <div><div class="lbl">Серия</div><div class="val" id="hlCount">0</div></div>
+      <div><div class="lbl">Можно забрать</div><div class="val" id="hlWin">0 ₽</div></div>
+      <div><div class="lbl">Ставка</div><div class="val" id="hlBetV">0 ₽</div></div>
+    </div>
+    <div class="row" style="justify-content:center">
+      <input type="number" id="hlBet" value="50" min="10" step="10">
+      <button class="btn gold" id="hlStart">Начать</button>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="hlHigh" disabled style="min-width:130px">⬆️ Больше</button>
+      <button class="btn red" id="hlLow" disabled style="min-width:130px">⬇️ Меньше</button>
+      <button class="btn grey" id="hlCash" disabled>💰 Забрать</button>
+    </div>
+    <div class="msg" id="hlMsg" style="text-align:center">Угадывайте: следующая карта больше или меньше.</div>
+  </div>
+</section>
+
+<section id="horses" class="game">
+  <div class="panel">
+    <h2>🐎 Конные скачки</h2>
+    <div id="track"></div>
+    <div class="horse-pick" id="horsePick"></div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <input type="number" id="hsBet" value="50" min="10" step="10">
+      <button class="btn gold" id="hsStart">🏁 Старт!</button>
+    </div>
+    <div class="msg" id="hsMsg" style="text-align:center">Выберите лошадь</div>
+  </div>
+</section>
+
+<section id="mines" class="game">
+  <div class="panel">
+    <h2>💣 Сапёр</h2>
+    <div class="row" style="justify-content:center">
+      <span style="color:#8fae9c">Мин:</span>
+      <select id="mnCount">
+        <option value="1">1</option><option value="3" selected>3</option>
+        <option value="5">5</option><option value="10">10</option>
+        <option value="15">15</option><option value="20">20</option>
+      </select>
+      <input type="number" id="mnBet" value="50" min="10" step="10">
+      <button class="btn gold" id="mnStart">Начать</button>
+      <button class="btn red" id="mnCash" disabled>💰 Забрать</button>
+    </div>
+    <div class="mine-stats">
+      <div><div class="lbl">Множитель</div><div class="val" id="mnMult">1.00x</div></div>
+      <div><div class="lbl">След. шаг</div><div class="val" id="mnNext">1.00x</div></div>
+      <div><div class="lbl">Можно забрать</div><div class="val" id="mnWin">0 ₽</div></div>
+    </div>
+    <div class="mine-grid" id="mineGrid"></div>
+    <div class="msg" id="mnMsg" style="text-align:center">Выберите количество мин</div>
+  </div>
+</section>
+
+<section id="slots" class="game">
+  <div class="panel">
+    <h2>🍒 Слоты</h2>
+    <div class="slots">
+      <div class="reel" id="r0">🍒</div>
+      <div class="reel" id="r1">🍒</div>
+      <div class="reel" id="r2">🍒</div>
+    </div>
+    <div class="row" style="justify-content:center">
+      <input type="number" id="slBet" value="50" min="10" step="10">
+      <button class="btn gold" id="slSpin">🎰 Крутить</button>
+    </div>
+    <div class="msg" id="slMsg" style="text-align:center">777 × 50 • 💎×25 • ⭐×15 • 🔔×10 • 🍋×6 • 🍒×4</div>
+  </div>
+</section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* ========== АУДИО ========== */
+let audioCtx=null,musicOn=true,sfxOn=true,musicScheduler=null,musicIndex=0,audioStarted=false;
+function ensureAudio(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+function tone(f,d,t='sine',v=0.15,w=0){if(!sfxOn)return;const c=ensureAudio();if(!c)return;const s=c.currentTime+w,o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+0.008);g.gain.exponentialRampToValueAtTime(0.0001,s+d);o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d+0.02);}
+const sfx={click(){tone(560,.05,'square',.04)},coin(){tone(880,.08,'sine',.1);tone(1318,.1,'sine',.09,.05)},win(){[523,659,784,1047].forEach((f,i)=>tone(f,.16,'sine',.14,i*.09))},bigwin(){[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.22,'sine',.16,i*.08))},lose(){tone(320,.14,'sawtooth',.09);tone(200,.24,'sawtooth',.09,.13)},deal(){tone(640,.04,'triangle',.06)},cardHit(){tone(720,.04,'triangle',.06)},spin(){for(let i=0;i<10;i++)tone(380+i*70,.09,'triangle',.04,i*.055)},peg(){tone(1250+Math.random()*450,.028,'square',.035)},drop(){tone(720,.08,'sine',.1);tone(560,.08,'sine',.08,.06)},dice(){for(let i=0;i<6;i++)tone(400+i*80,.05,'square',.05,i*.04)},diceLand(){tone(600,.1,'triangle',.1);tone(400,.12,'triangle',.08,.05)}};
+const MC=[[130.81,164.81,196],[146.83,174.61,220],[164.81,196,246.94],[174.61,220,261.63],[146.83,174.61,220],[130.81,164.81,196],[174.61,220,261.63],[196,246.94,293.66]];
+function playChord(fs,dur,time){const c=audioCtx;if(!c)return;fs.forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type=i===0?'triangle':'sine';o.frequency.value=f;g.gain.setValueAtTime(0,time);g.gain.linearRampToValueAtTime(.025,time+.35);g.gain.linearRampToValueAtTime(.018,time+dur-.6);g.gain.linearRampToValueAtTime(0,time+dur);o.connect(g);g.connect(c.destination);o.start(time);o.stop(time+dur+.1);});const b=c.createOscillator(),bg=c.createGain();b.type='triangle';b.frequency.value=fs[0]/2;bg.gain.setValueAtTime(0,time);bg.gain.linearRampToValueAtTime(.045,time+.25);bg.gain.linearRampToValueAtTime(0,time+dur);b.connect(bg);bg.connect(c.destination);b.start(time);b.stop(time+dur+.1);}
+function schedMusic(){if(!musicOn||!audioCtx)return;const dur=2.6;playChord(MC[musicIndex%MC.length],dur,audioCtx.currentTime+.05);musicIndex++;musicScheduler=setTimeout(schedMusic,dur*1000);}
+function startMusic(){if(!musicOn||musicScheduler)return;ensureAudio();schedMusic();}
+function stopMusic(){if(musicScheduler){clearTimeout(musicScheduler);musicScheduler=null;}}
+document.body.addEventListener('click',()=>{ensureAudio();if(musicOn&&!audioStarted){audioStarted=true;startMusic();}},{once:true});
+$('musicToggle').onclick=e=>{e.stopPropagation();musicOn=!musicOn;const b=$('musicToggle');b.textContent=musicOn?'🎵 Музыка':'🔇 Музыка';b.classList.toggle('off',!musicOn);if(musicOn){ensureAudio();startMusic();sfx.click();}else stopMusic();};
+$('sfxToggle').onclick=e=>{e.stopPropagation();sfxOn=!sfxOn;const b=$('sfxToggle');b.textContent=sfxOn?'🔊 Звук':'🔇 Звук';b.classList.toggle('off',!sfxOn);if(sfxOn)sfx.click();};
+
+/* ========== СОХРАНЕНИЕ ========== */
+const SAVE_KEY='casino_royale_v11';
+const BET_IDS=['bjBet','pkBet','crBet','whBet','hsBet','mnBet','slBet','bcBet','rlBet','plBet','hlBet','diceBet','kenoBet'];
+let balance=1000;
+function saveProgress(){try{const d={balance,activeGame:document.querySelector('#nav button.active')?.dataset.game};BET_IDS.forEach(id=>{const el=$(id);if(el)d[id]=el.value;});localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}}
+function loadProgress(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const d=JSON.parse(raw);if(typeof d.balance==='number')balance=d.balance;BET_IDS.forEach(id=>{const el=$(id);if(el&&d[id]!=null)el.value=d[id];});if(d.activeGame){const btn=document.querySelector(`#nav button[data-game="${d.activeGame}"]`);if(btn){document.querySelectorAll('#nav button[data-game]').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.game').forEach(g=>g.classList.remove('active'));btn.classList.add('active');$(d.activeGame).classList.add('active');}}}catch(e){}}
+function setBalance(v){balance=Math.max(0,Math.round(v*100)/100);$('balance').textContent=balance.toFixed(0);saveProgress();}
+function addBalance(v){setBalance(balance+v);}
+function toast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
+loadProgress();$('balance').textContent=balance.toFixed(0);
+document.querySelectorAll('#nav button[data-game]').forEach(b=>{b.onclick=()=>{sfx.click();document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.game').forEach(g=>g.classList.remove('active'));$(b.dataset.game).classList.add('active');saveProgress();};});
+$('resetBtn').onclick=()=>{sfx.click();setBalance(1000);BET_IDS.forEach(id=>{const el=$(id);if(el)el.value=50;});localStorage.removeItem(SAVE_KEY);saveProgress();toast('Прогресс сброшен. Баланс 1000 ₽');};
+BET_IDS.forEach(id=>{const el=$(id);if(el)el.addEventListener('change',saveProgress);});
+
+/* ========== КАРТЫ ========== */
+const SUITS=[{s:'♠',c:'black'},{s:'♥',c:'red'},{s:'♦',c:'red'},{s:'♣',c:'black'}];
+const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+function freshDeck(){const d=[];for(const su of SUITS)for(const r of RANKS){let v=parseInt(r);if(isNaN(v))v=(r==='A')?11:10;d.push({rank:r,suit:su.s,color:su.c,value:v});}return d.sort(()=>Math.random()-0.5);}
+function makeCard(card,hidden){const d=document.createElement('div');d.className='card'+(hidden?' back':'')+(card&&card.color==='red'?' red':'');if(!hidden&&card)d.innerHTML=`<span>${card.rank}</span><span class="suit">${card.suit}</span>`;return d;}
+function handValue(hand){let sum=0,aces=0;for(const c of hand){sum+=c.value;if(c.rank==='A')aces++;}while(sum>21&&aces>0){sum-=10;aces--;}return sum;}
+
+/* ========== БЛЕКДЖЕК ========== */
+let bj={deck:[],player:[],dealer:[],ai:[],active:false,bet:0,phase:'idle'};
+const AI_Q={hit:['Хм, возьму ещё...','Ещё одну!','Рискну.'],stand:['Хватит.','Останавливаюсь.','Достаточно.'],bust:['Ой, перебор!','Чёрт, много!'],win:['Есть!','Отлично!','Победа!'],lose:['Блин...','Не повезло.'],push:['Ничья.','Поровну.'],wait:['Жду тебя...','Твой ход.']};
+function aiSay(arr){$('aiStatus').textContent=arr[Math.floor(Math.random()*arr.length)];}
+function renderBJ(hideDealer){const dc=$('dealerCards'),pc=$('playerCards'),ac=$('aiCards');dc.innerHTML='';pc.innerHTML='';ac.innerHTML='';bj.dealer.forEach((c,i)=>dc.appendChild(makeCard(c,hideDealer&&i===1)));bj.player.forEach(c=>pc.appendChild(makeCard(c)));bj.ai.forEach(c=>ac.appendChild(makeCard(c)));$('playerScore').textContent=bj.player.length?handValue(bj.player):'—';$('aiScore').textContent=bj.ai.length?handValue(bj.ai):'—';if(hideDealer&&bj.dealer.length)$('dealerScore').textContent=bj.dealer[0].value;else $('dealerScore').textContent=bj.dealer.length?handValue(bj.dealer):'—';}
+function aiBJDecision(){const v=handValue(bj.ai);const soft=bj.ai.some(c=>c.rank==='A')&&(bj.ai.reduce((a,c)=>a+(c.rank==='A'?1:c.value),0)+10===v);const du=bj.dealer[0].value;if(v>=17)return'stand';if(soft){if(v>=19)return'stand';if(v===18&&du<=8)return'stand';return'hit';}if(v>=13&&du<=6)return'stand';if(v===12&&du>=4&&du<=6)return'stand';return'hit';}
+$('bjDeal').onclick=()=>{const bet=parseInt($('bjBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.deal();bj={deck:freshDeck(),player:[],dealer:[],ai:[],active:true,bet,phase:'player'};bj.player.push(bj.deck.pop(),bj.deck.pop());bj.ai.push(bj.deck.pop(),bj.deck.pop());bj.dealer.push(bj.deck.pop(),bj.deck.pop());renderBJ(true);$('bjMsg').className='msg';$('bjMsg').textContent='Ваш ход...';aiSay(AI_Q.wait);toggleBJ(true);if(handValue(bj.player)===21){$('bjMsg').textContent='🃏 БЛЕКДЖЕК!';setTimeout(finishPlayerPhase,600);}};
+function toggleBJ(on){$('bjDeal').disabled=on;$('bjHit').disabled=!on;$('bjStand').disabled=!on;$('bjDouble').disabled=!on||bj.player.length!==2||balance<bj.bet;}
+$('bjHit').onclick=()=>{if(!bj.active||bj.phase!=='player')return;bj.player.push(bj.deck.pop());sfx.cardHit();renderBJ(true);const v=handValue(bj.player);if(v>21){$('bjMsg').className='msg lose';$('bjMsg').textContent=`💥 Перебор (${v})! -${bj.bet} ₽`;finishPlayerPhase();}else if(v===21)finishPlayerPhase();};
+$('bjDouble').onclick=()=>{if(!bj.active||bj.phase!=='player'||balance<bj.bet)return;addBalance(-bj.bet);bj.bet*=2;sfx.cardHit();bj.player.push(bj.deck.pop());renderBJ(true);if(handValue(bj.player)>21){$('bjMsg').className='msg lose';$('bjMsg').textContent=`💥 Перебор! -${bj.bet} ₽`;}finishPlayerPhase();};
+$('bjStand').onclick=()=>{if(bj.active&&bj.phase==='player')finishPlayerPhase();};
+function finishPlayerPhase(){toggleBJ(false);bj.active=false;bj.phase='ai';if(handValue(bj.player)<=21){$('bjMsg').className='msg';$('bjMsg').textContent='🤖 ИИ думает...';aiSay(['Хм, ход за мной.','Дай подумать...']);}setTimeout(aiBJTurn,800);}
+function aiBJTurn(){if(handValue(bj.ai)===21){aiSay(AI_Q.stand);setTimeout(dealerBJTurn,900);return;}const d=aiBJDecision();if(d==='hit'){bj.ai.push(bj.deck.pop());sfx.cardHit();renderBJ(true);aiSay(AI_Q.hit);if(handValue(bj.ai)>21){aiSay(AI_Q.bust);setTimeout(dealerBJTurn,1000);return;}setTimeout(aiBJTurn,900);}else{aiSay(AI_Q.stand);setTimeout(dealerBJTurn,900);}}
+function dealerBJTurn(){bj.phase='dealer';renderBJ(false);aiSay(['Смотрим вскрытие...','Момент истины!']);$('bjMsg').textContent='🃏 Вскрытие...';setTimeout(()=>{while(handValue(bj.dealer)<17)bj.dealer.push(bj.deck.pop());renderBJ(false);resolveBJ();},700);}
+function resolveBJ(){const p=handValue(bj.player),a=handValue(bj.ai),d=handValue(bj.dealer);const dBust=d>21;const parts=[];if(p>21)parts.push(`👤 Перебор (${p})`);else if(dBust||p>d){addBalance(bj.bet*2);parts.push(`👤 Победа (${p})`);}else if(p<d)parts.push(`👤 Проигрыш (${p})`);else{addBalance(bj.bet);parts.push(`👤 Ничья (${p})`);}let ar;if(a>21){ar=`🤖 перебор (${a})`;aiSay(AI_Q.bust);}else if(dBust||a>d){ar=`🤖 победа (${a})`;aiSay(AI_Q.win);}else if(a<d){ar=`🤖 проигрыш (${a})`;aiSay(AI_Q.lose);}else{ar=`🤖 ничья (${a})`;aiSay(AI_Q.push);}const msg=$('bjMsg');const pw=(p<=21)&&(dBust||p>d);const pp=(p<=21)&&!dBust&&p===d;msg.className='msg '+(pw?'win':(pp?'':'lose'));msg.innerHTML=`Дилер: ${d}${dBust?' 💥':''} • ${parts[0]} • ${ar}`;if(pw)sfx.win();else if(!pp)sfx.lose();else sfx.coin();toggleBJ(false);bj.phase='idle';}
+
+/* ========== ПОКЕР ========== */
+const STAGES=['preflop','flop','turn','river','showdown'];
+const SN={preflop:'Пре-флоп',flop:'Флоп',turn:'Тёрн',river:'Ривер',showdown:'Вскрытие'};
+let pk=null;
+function pkReset(){pk={deck:[],myCards:[],aiCards:[],community:[],stage:0,pot:0,myBet:0,aiBet:0,baseBet:0,myTurn:true,gameOver:true,raisesThisRound:0};}
+function pkNewHand(){const bet=parseInt($('pkBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.deal();pkReset();pk.baseBet=bet;pk.deck=freshDeck();pk.myCards=[pk.deck.pop(),pk.deck.pop()];pk.aiCards=[pk.deck.pop(),pk.deck.pop()];pk.pot=bet*2;pk.myBet=bet;pk.aiBet=bet;pk.gameOver=false;pk.myTurn=true;pk.stage=0;pkRender();$('pkMsg').className='msg';$('pkMsg').textContent=`Пре-флоп. Банк: ${pk.pot} ₽.`;aiSay2('Раздал карты...');pkUpdateButtons();}
+function pkRender(){const ab=$('pkAiCards');ab.innerHTML='';const rv=pk.stage===4;pk.aiCards.forEach(c=>ab.appendChild(makeCard(c,!rv)));const cb=$('pkCommunity');cb.innerHTML='';for(let i=0;i<5;i++){if(i<pk.community.length)cb.appendChild(makeCard(pk.community[i],false));else{const ph=document.createElement('div');ph.className='card';ph.style.background='linear-gradient(180deg,#0a1f12,#05120a)';ph.style.border='2px dashed #2d5a3a';ph.style.boxShadow='none';ph.innerHTML='<span style="color:#2d5a3a;font-size:26px;margin:auto">?</span>';cb.appendChild(ph);}}const mb=$('pkPlayerCards');mb.innerHTML='';pk.myCards.forEach(c=>mb.appendChild(makeCard(c,false)));$('pkPot').textContent=pk.pot;$('pkMyBet').textContent=pk.myBet;$('pkAiBet').textContent=pk.aiBet;$('pkStage').textContent=SN[STAGES[pk.stage]];if(pk.myCards.length===2){if(pk.community.length>=3){const b=best5of7([...pk.myCards,...pk.community]);$('pkMyHandName').textContent=`— ${b.name}`;}else{const v1=pk.myCards[0].rank==='A'?14:(parseInt(pk.myCards[0].rank)||10);const v2=pk.myCards[1].rank==='A'?14:(parseInt(pk.myCards[1].rank)||10);if(v1===v2)$('pkMyHandName').textContent=`— пара ${pk.myCards[0].rank}`;else $('pkMyHandName').textContent=`— ${pk.myCards[0].rank}${pk.myCards[1].rank}`;}}else $('pkMyHandName').textContent='';if(pk.stage===4&&pk.aiCards.length===2){const b=best5of7([...pk.aiCards,...pk.community]);$('pkAiHandName').textContent=`— ${b.name}`;}else $('pkAiHandName').textContent='';}
+function aiSay2(t){$('pkAiStatus').textContent=t;}
+function pkUpdateButtons(){const a=!pk.gameOver&&pk.myTurn;$('pkNew').disabled=!pk.gameOver;$('pkCheck').disabled=!a||pk.aiBet>pk.myBet;$('pkCall').disabled=!a||pk.aiBet<=pk.myBet;$('pkRaise').disabled=!a||pk.raisesThisRound>=3||balance<pk.baseBet;$('pkFold').disabled=!a;}
+function evalHand5(hand){const vals=hand.map(c=>c.rank==='A'?14:(parseInt(c.rank)||10)).sort((a,b)=>a-b);const suits=hand.map(c=>c.suit);const flush=suits.every(s=>s===suits[0]);const uniq=[...new Set(vals)];let straight=false,sh=0;if(uniq.length===5&&uniq[4]-uniq[0]===4){straight=true;sh=uniq[4];}if(uniq.join(',')==='2,3,4,5,14'){straight=true;sh=5;}const counts={};vals.forEach(v=>counts[v]=(counts[v]||0)+1);const cnt=Object.values(counts).sort((a,b)=>b-a);const royal=flush&&straight&&uniq[0]===10;if(royal)return{score:9e9,name:'Роял-флеш',cat:9};if(flush&&straight)return{score:8e9+sh,name:'Стрит-флеш',cat:8};if(cnt[0]===4){const q=parseInt(Object.keys(counts).find(k=>counts[k]===4));const k=parseInt(Object.keys(counts).find(k=>counts[k]===1));return{score:7e9+q*100+k,name:'Каре',cat:7};}if(cnt[0]===3&&cnt[1]===2){const t=parseInt(Object.keys(counts).find(k=>counts[k]===3));const p=parseInt(Object.keys(counts).find(k=>counts[k]===2));return{score:6e9+t*100+p,name:'Фулл-хаус',cat:6};}if(flush){const sv=vals.slice().sort((a,b)=>b-a);let s=5e9;sv.forEach((v,i)=>s+=v*Math.pow(100,4-i));return{score:s,name:'Флеш',cat:5};}if(straight)return{score:4e9+sh,name:'Стрит',cat:4};if(cnt[0]===3){const t=parseInt(Object.keys(counts).find(k=>counts[k]===3));const kk=vals.filter(v=>v!==t).sort((a,b)=>b-a);return{score:3e9+t*1e4+kk[0]*100+kk[1],name:'Сет',cat:3};}if(cnt[0]===2&&cnt[1]===2){const ps=Object.keys(counts).filter(k=>counts[k]===2).map(Number).sort((a,b)=>b-a);const k=parseInt(Object.keys(counts).find(k=>counts[k]===1));return{score:2e9+ps[0]*1e4+ps[1]*100+k,name:'Две пары',cat:2};}if(cnt[0]===2){const p=parseInt(Object.keys(counts).find(k=>counts[k]===2));const kk=vals.filter(v=>v!==p).sort((a,b)=>b-a);return{score:1e9+p*1e6+kk[0]*1e4+kk[1]*100+kk[2],name:'Пара',cat:1};}const sv=vals.slice().sort((a,b)=>b-a);let s=0;sv.forEach((v,i)=>s+=v*Math.pow(100,4-i));return{score:s,name:'Старшая карта',cat:0};}
+function best5of7(cards){if(cards.length<5)return{score:0,name:'—',cat:0};let best=null,bs=-1;const n=cards.length;for(let a=0;a<n-4;a++)for(let b=a+1;b<n-3;b++)for(let c=b+1;c<n-2;c++)for(let d=c+1;d<n-1;d++)for(let e=d+1;e<n;e++){const ev=evalHand5([cards[a],cards[b],cards[c],cards[d],cards[e]]);if(ev.score>bs){bs=ev.score;best=ev;}}return best;}
+function aiEstPre(){const v1=pk.aiCards[0].rank==='A'?14:(parseInt(pk.aiCards[0].rank)||10);const v2=pk.aiCards[1].rank==='A'?14:(parseInt(pk.aiCards[1].rank)||10);const hi=Math.max(v1,v2),lo=Math.min(v1,v2);const su=pk.aiCards[0].suit===pk.aiCards[1].suit;if(v1===v2)return Math.min(1,.55+(hi-2)/12*.45);let s=(hi+lo)/28;if(su)s+=.08;if(hi-lo===1&&hi>=8)s+=.08;if(hi>=12)s+=.15;if(hi===14)s+=.05;return Math.min(1,s);}
+function aiEstPost(){if(pk.community.length===0)return aiEstPre();const b=best5of7([...pk.aiCards,...pk.community]);return Math.min(1,b.cat/8+.05);}
+function aiPokerDecision(){const tc=pk.myBet-pk.aiBet;const st=pk.community.length===0?aiEstPre():aiEstPost();const cr=pk.raisesThisRound<3&&balance>=pk.baseBet;const r=Math.random();if(r<.08&&cr)return{action:'raise',reason:'Хм, а вот так?'};if(st>.75){if(cr&&r<.7)return{action:'raise',reason:'Хорошая рука!'};return{action:tc>0?'call':'check',reason:'Колл.'};}if(st>.5){if(cr&&r<.35)return{action:'raise',reason:'Давление!'};if(tc===0)return{action:'check',reason:'Чек.'};if(tc<=pk.baseBet)return{action:'call',reason:'Колл.'};return{action:'fold',reason:'Дорого.'};}if(st>.3){if(tc===0)return{action:'check',reason:'Чек.'};if(tc<=pk.baseBet)return{action:'call',reason:'Посмотрим.'};return{action:'fold',reason:'Много.'};}if(tc===0)return{action:'check',reason:'Чек.'};if(tc<=pk.baseBet*.5&&r<.4)return{action:'call',reason:'Ладно.'};return{action:'fold',reason:'Фолд.'};}
+$('pkNew').onclick=pkNewHand;
+$('pkCheck').onclick=()=>{if(pk.gameOver||!pk.myTurn)return;if(pk.aiBet>pk.myBet){toast('Нельзя чек!');return;}sfx.click();$('pkMsg').textContent='Вы: Чек.';pk.myTurn=false;pkUpdateButtons();setTimeout(aiPokerTurn,700);};
+$('pkCall').onclick=()=>{if(pk.gameOver||!pk.myTurn)return;const tc=pk.aiBet-pk.myBet;if(tc<=0)return;if(balance<tc){toast('Недостаточно!');return;}addBalance(-tc);sfx.coin();pk.myBet+=tc;pk.pot+=tc;$('pkMsg').textContent=`Вы: Колл ${tc} ₽.`;pkRender();pk.myTurn=false;pkUpdateButtons();setTimeout(aiPokerTurn,700);};
+$('pkRaise').onclick=()=>{if(pk.gameOver||!pk.myTurn)return;const ra=pk.baseBet;const need=(pk.aiBet-pk.myBet)+ra;if(balance<need){toast('Недостаточно!');return;}addBalance(-need);sfx.coin();pk.myBet+=need;pk.pot+=need;pk.raisesThisRound++;$('pkMsg').textContent=`Вы: Рейз! +${ra} ₽.`;pkRender();pk.myTurn=false;pkUpdateButtons();setTimeout(aiPokerTurn,700);};
+$('pkFold').onclick=()=>{if(pk.gameOver||!pk.myTurn)return;sfx.click();pk.gameOver=true;$('pkMsg').className='msg lose';$('pkMsg').textContent=`Вы сбросили. -${pk.myBet} ₽`;aiSay2('Забираю банк! 🤑');revealAiCards();pkUpdateButtons();};
+function revealAiCards(){const ab=$('pkAiCards');ab.innerHTML='';pk.aiCards.forEach(c=>ab.appendChild(makeCard(c,false)));if(pk.community.length>=3){const b=best5of7([...pk.aiCards,...pk.community]);$('pkAiHandName').textContent=`— ${b.name}`;}}
+function aiPokerTurn(){if(pk.gameOver)return;const d=aiPokerDecision();aiSay2(d.reason);setTimeout(()=>{if(d.action==='fold'){pk.gameOver=true;sfx.win();$('pkMsg').className='msg win';$('pkMsg').textContent=`🎉 ИИ сбросил! +${pk.pot} ₽`;addBalance(pk.pot);toast(`🎉 +${pk.pot} ₽`);revealAiCards();pkUpdateButtons();return;}if(d.action==='check')$('pkMsg').textContent='ИИ: Чек.';else if(d.action==='call'){const tc=pk.myBet-pk.aiBet;if(tc>0){pk.aiBet+=tc;pk.pot+=tc;sfx.coin();$('pkMsg').textContent=`ИИ: Колл ${tc} ₽.`;}}else if(d.action==='raise'){const ra=pk.baseBet;const need=(pk.myBet-pk.aiBet)+ra;pk.aiBet+=need;pk.pot+=need;pk.raisesThisRound++;sfx.coin();$('pkMsg').textContent=`ИИ: Рейз! ${pk.aiBet} ₽.`;pk.myTurn=true;pkRender();pkUpdateButtons();return;}pkRender();advanceStage();},800);}
+function advanceStage(){pk.myBet=0;pk.aiBet=0;pk.raisesThisRound=0;if(pk.stage===0){pk.deck.pop();pk.community.push(pk.deck.pop(),pk.deck.pop(),pk.deck.pop());pk.stage=1;aiSay2('Флоп.');}else if(pk.stage===1){pk.deck.pop();pk.community.push(pk.deck.pop());pk.stage=2;aiSay2('Тёрн.');}else if(pk.stage===2){pk.deck.pop();pk.community.push(pk.deck.pop());pk.stage=3;aiSay2('Ривер!');}else if(pk.stage===3){pk.stage=4;showdown();return;}pk.myTurn=true;pkRender();pkUpdateButtons();$('pkMsg').textContent=`Раунд: ${SN[STAGES[pk.stage]]}.`;}
+function showdown(){pk.gameOver=true;const mb=best5of7([...pk.myCards,...pk.community]);const ab=best5of7([...pk.aiCards,...pk.community]);revealAiCards();const msg=$('pkMsg');if(mb.score>ab.score){addBalance(pk.pot);sfx.bigwin();msg.className='msg win';msg.textContent=`🏆 ${mb.name} vs ${ab.name} — +${pk.pot} ₽`;toast(`🏆 +${pk.pot} ₽`);aiSay2('Хорошая рука.');}else if(mb.score<ab.score){sfx.lose();msg.className='msg lose';msg.textContent=`😔 ${ab.name} vs ${mb.name}. -${pk.pot/2} ₽`;aiSay2('Ха! Моя взяла! 😎');}else{addBalance(pk.pot/2);sfx.coin();msg.className='msg';msg.textContent=`🤝 Ничья! ${mb.name}.`;aiSay2('Ничья.');}pkUpdateButtons();}
+pkReset();pkRender();pk.gameOver=true;pkUpdateButtons();
+
+/* ========== БАККАРА ========== */
+let bcState={pick:null,active:false,bet:0};
+function bcValue(card){const r=card.rank;if(r==='A')return 1;if(['10','J','Q','K'].includes(r))return 0;return parseInt(r);}
+function bcHandTotal(hand){return hand.reduce((s,c)=>s+bcValue(c),0)%10;}
+function bcRenderCards(hand,boxId){const box=$(boxId);box.innerHTML='';hand.forEach(c=>box.appendChild(makeCard(c,false)));}
+function bcResetTable(){$('bcPlayerCards').innerHTML='';$('bcBankerCards').innerHTML='';$('bcPlayerScore').textContent='—';$('bcBankerScore').textContent='—';}
+bcResetTable();
+document.querySelectorAll('#bcPicker button').forEach(b=>{b.onclick=()=>{if(bcState.active)return;sfx.click();bcState.pick=b.dataset.pick;document.querySelectorAll('#bcPicker button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');$('bcDeal').disabled=false;$('bcMsg').className='msg';$('bcMsg').textContent=`Ставка на: ${b.textContent.trim()}`;};});
+$('bcDeal').onclick=()=>{if(bcState.active||!bcState.pick){toast('Выберите ставку!');return;}const bet=parseInt($('bcBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.deal();bcState.active=true;bcState.bet=bet;$('bcDeal').disabled=true;document.querySelectorAll('#bcPicker button').forEach(b=>b.disabled=true);bcResetTable();$('bcMsg').className='msg';$('bcMsg').textContent='Раздача...';const deck=freshDeck();const player=[deck.pop(),deck.pop()];const banker=[deck.pop(),deck.pop()];setTimeout(()=>{bcRenderCards([player[0]],'bcPlayerCards');$('bcPlayerScore').textContent=bcHandTotal([player[0]]);sfx.cardHit();},200);setTimeout(()=>{bcRenderCards([banker[0]],'bcBankerCards');$('bcBankerScore').textContent=bcHandTotal([banker[0]]);sfx.cardHit();},500);setTimeout(()=>{bcRenderCards(player,'bcPlayerCards');$('bcPlayerScore').textContent=bcHandTotal(player);},800);setTimeout(()=>{bcRenderCards(banker,'bcBankerCards');$('bcBankerScore').textContent=bcHandTotal(banker);},1100);setTimeout(()=>{let pT=bcHandTotal(player),bT=bcHandTotal(banker);if(pT>=8||bT>=8){finishBaccarat(player,banker,pT,bT);return;}let pThird=null;if(pT<=5){pThird=deck.pop();player.push(pThird);setTimeout(()=>{bcRenderCards(player,'bcPlayerCards');$('bcPlayerScore').textContent=bcHandTotal(player);sfx.cardHit();},400);pT=bcHandTotal(player);}const pt=pThird?bcValue(pThird):null;let bDraw=false;if(pThird===null){if(bT<=5)bDraw=true;}else{if(bT<=2)bDraw=true;else if(bT===3&&pt!==8)bDraw=true;else if(bT===4&&pt>=2&&pt<=7)bDraw=true;else if(bT===5&&pt>=4&&pt<=7)bDraw=true;else if(bT===6&&pt>=6&&pt<=7)bDraw=true;}if(bDraw){banker.push(deck.pop());setTimeout(()=>{bcRenderCards(banker,'bcBankerCards');$('bcBankerScore').textContent=bcHandTotal(banker);sfx.cardHit();},400);}setTimeout(()=>{finishBaccarat(player,banker,bcHandTotal(player),bcHandTotal(banker));},900);},1500);};
+function finishBaccarat(p,b,pT,bT){$('bcPlayerScore').textContent=pT;$('bcBankerScore').textContent=bT;const msg=$('bcMsg');let w=pT>bT?'player':(bT>pT?'banker':'tie');const wt=w==='player'?'👤 Игрок':(w==='banker'?'🏦 Банкир':'🤝 Ничья');let pay=0;if(w===bcState.pick){if(w==='player')pay=bcState.bet*2;else if(w==='banker')pay=Math.round(bcState.bet*1.95);else pay=bcState.bet*8;}if(pay>0){addBalance(pay);const profit=pay-bcState.bet;msg.className='msg win';msg.textContent=`${wt} ${pT}:${bT} — +${profit} ₽`;if(w==='tie'||profit>bcState.bet)sfx.bigwin();else sfx.win();toast(`🎉 +${profit} ₽`);}else{sfx.lose();msg.className='msg lose';msg.textContent=`${wt} ${pT}:${bT} — -${bcState.bet} ₽`;}bcState.active=false;bcState.pick=null;document.querySelectorAll('#bcPicker button').forEach(b=>{b.classList.remove('sel');b.disabled=false;});$('bcDeal').disabled=true;}
+
+/* ========== РУЛЕТКА (обновлённая) ========== */
+const RED_NUMS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+// Европейский порядок на колесе
+const EURO_WHEEL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+let rlState={pick:null,pickType:null,active:false,rotation:0};
+const SVG_NS='http://www.w3.org/2000/svg';
+
+function buildRouletteWheel(){
+  const svg=$('rlWheel');svg.innerHTML='';
+  const R=150;
+  // сектора
+  const segDeg=360/EURO_WHEEL_ORDER.length;
+  EURO_WHEEL_ORDER.forEach((num,i)=>{
+    const a0=i*segDeg,a1=(i+1)*segDeg;
+    const rad0=(a0-90)*Math.PI/180,rad1=(a1-90)*Math.PI/180;
+    const x0=R*Math.cos(rad0),y0=R*Math.sin(rad0);
+    const x1=R*Math.cos(rad1),y1=R*Math.sin(rad1);
+    const p=document.createElementNS(SVG_NS,'path');
+    p.setAttribute('d',`M 0 0 L ${x0.toFixed(2)} ${y0.toFixed(2)} A ${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`);
+    const isRed=RED_NUMS.has(num);
+    p.setAttribute('fill',num===0?'#1e7a45':(isRed?'#c0392b':'#1a1a1a'));
+    p.setAttribute('stroke','#d4af37');
+    p.setAttribute('stroke-width','0.8');
+    svg.appendChild(p);
+    // число
+    const aMid=a0+segDeg/2;
+    const rm=R*0.82;
+    const radm=(aMid-90)*Math.PI/180;
+    const tx=rm*Math.cos(radm),ty=rm*Math.sin(radm);
+    const t=document.createElementNS(SVG_NS,'text');
+    t.setAttribute('x',tx.toFixed(2));t.setAttribute('y',ty.toFixed(2));
+    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');
+    t.setAttribute('fill','#fff');t.setAttribute('font-size','11');t.setAttribute('font-weight','900');
+    t.setAttribute('pointer-events','none');
+    t.setAttribute('transform',`rotate(${aMid} ${tx.toFixed(2)} ${ty.toFixed(2)})`);
+    t.textContent=num;
+    svg.appendChild(t);
+  });
+  // Внешнее кольцо
+  const ring=document.createElementNS(SVG_NS,'circle');
+  ring.setAttribute('cx',0);ring.setAttribute('cy',0);ring.setAttribute('r',R-1);
+  ring.setAttribute('fill','none');ring.setAttribute('stroke','#ffe58a');ring.setAttribute('stroke-width','3');
+  svg.appendChild(ring);
+  // Центр
+  const c=document.createElementNS(SVG_NS,'circle');
+  c.setAttribute('cx',0);c.setAttribute('cy',0);c.setAttribute('r',32);
+  c.setAttribute('fill','#12180f');c.setAttribute('stroke','#d4af37');c.setAttribute('stroke-width','4');
+  svg.appendChild(c);
+  const st=document.createElementNS(SVG_NS,'text');
+  st.setAttribute('x',0);st.setAttribute('y',0);st.setAttribute('text-anchor','middle');st.setAttribute('dominant-baseline','central');
+  st.setAttribute('fill','#ffd75e');st.setAttribute('font-size','30');st.setAttribute('font-weight','900');
+  st.textContent='★';svg.appendChild(st);
+}
+buildRouletteWheel();
+
+function buildRouletteBoard(){
+  const b=$('rlBoard');b.innerHTML='';
+  const zero=document.createElement('div');
+  zero.className='rn green rn-zero';zero.textContent='0';zero.dataset.num='0';
+  zero.onclick=()=>pickNumber(0);
+  b.appendChild(zero);
+  for(let num=1;num<=36;num++){
+    const col=Math.floor((num-1)/3)+2;
+    const row=3-((num-1)%3);
+    const n=document.createElement('div');
+    n.className='rn '+(RED_NUMS.has(num)?'red':'black');
+    n.style.gridColumn=col;n.style.gridRow=row;
+    n.textContent=num;n.dataset.num=num;
+    n.onclick=()=>pickNumber(num);
+    b.appendChild(n);
+  }
+}
+buildRouletteBoard();
+
+function pickNumber(n){
+  if(rlState.active)return;
+  sfx.click();
+  rlState.pick=n;rlState.pickType='number';
+  clearRlSelections();
+  const el=document.querySelector(`.rn[data-num="${n}"]`);
+  if(el)el.classList.add('sel');
+  $('rlSpin').disabled=false;
+  $('rlMsg').className='msg';
+  $('rlMsg').textContent=`Ставка на число ${n} (×36)`;
+}
+document.querySelectorAll('#rlQuick button').forEach(b=>{
+  b.onclick=()=>{
+    if(rlState.active)return;
+    sfx.click();
+    rlState.pick=b.dataset.bet;rlState.pickType='quick';
+    clearRlSelections();
+    b.classList.add('sel');
+    $('rlSpin').disabled=false;
+    $('rlMsg').className='msg';
+    $('rlMsg').textContent=`Ставка: ${b.textContent.trim()}`;
+  };
+});
+function clearRlSelections(){
+  document.querySelectorAll('.rn').forEach(x=>x.classList.remove('sel','winner'));
+  document.querySelectorAll('#rlQuick button').forEach(x=>x.classList.remove('sel'));
+}
+$('rlSpin').onclick=()=>{
+  if(rlState.active)return;
+  if(rlState.pick===null){toast('Сначала выберите ставку!');return;}
+  const bet=parseInt($('rlBet').value)||0;
+  if(bet<10){toast('Мин. ставка 10 ₽');return;}
+  if(bet>balance){toast('Недостаточно!');return;}
+  addBalance(-bet);sfx.spin();
+  rlState.active=true;
+  $('rlSpin').disabled=true;
+  document.querySelectorAll('.rn').forEach(x=>x.style.pointerEvents='none');
+  document.querySelectorAll('#rlQuick button').forEach(x=>x.disabled=true);
+  const res=$('rlResult');
+  res.className='roulette-result spinning';
+  res.textContent='?';
+  clearRlSelections();
+
+  // Выбор выигрышного числа
+  const finalNum=Math.floor(Math.random()*37);
+  const idx=EURO_WHEEL_ORDER.indexOf(finalNum);
+  const segDeg=360/EURO_WHEEL_ORDER.length;
+  // хотим: idx*segDeg + segDeg/2 + rotation ≡ 0 (mod 360)
+  const midDeg=idx*segDeg+segDeg/2;
+  const targetMod=((360-midDeg)%360+360)%360;
+  const currentMod=((rlState.rotation%360)+360)%360;
+  let delta=targetMod-currentMod;
+  if(delta<0)delta+=360;
+  const spins=5+Math.floor(Math.random()*3);
+  rlState.rotation+=spins*360+delta;
+  $('rlWheel').style.transform=`rotate(${rlState.rotation}deg)`;
+
+  setTimeout(()=>{
+    res.className='roulette-result landed '+(finalNum===0?'green':(RED_NUMS.has(finalNum)?'red':'black'));
+    res.textContent=finalNum;
+    // подсветить на поле
+    const el=document.querySelector(`.rn[data-num="${finalNum}"]`);
+    if(el)el.classList.add('winner');
+    resolveRoulette(finalNum,bet);
+  },5100);
+};
+function resolveRoulette(num,bet){
+  const msg=$('rlMsg');
+  let payout=0,desc='';
+  const isRed=RED_NUMS.has(num);
+  const isBlack=num!==0&&!isRed;
+  const isEven=num!==0&&num%2===0;
+  const isOdd=num%2===1;
+  const p=rlState.pick;
+  if(rlState.pickType==='number'){
+    if(num===p){payout=bet*36;desc=`Число ${num}! ×36`;}
+  }else{
+    switch(p){
+      case'red':if(isRed){payout=bet*2;desc='Красное ×2';}break;
+      case'black':if(isBlack){payout=bet*2;desc='Чёрное ×2';}break;
+      case'even':if(isEven){payout=bet*2;desc='Чёт ×2';}break;
+      case'odd':if(isOdd){payout=bet*2;desc='Нечет ×2';}break;
+      case'low':if(num>=1&&num<=18){payout=bet*2;desc='1-18 ×2';}break;
+      case'high':if(num>=19&&num<=36){payout=bet*2;desc='19-36 ×2';}break;
+      case'd1':if(num>=1&&num<=12){payout=bet*3;desc='1-я дюжина ×3';}break;
+      case'd2':if(num>=13&&num<=24){payout=bet*3;desc='2-я дюжина ×3';}break;
+      case'd3':if(num>=25&&num<=36){payout=bet*3;desc='3-я дюжина ×3';}break;
+    }
+  }
+  if(payout>0){
+    addBalance(payout);
+    const profit=payout-bet;
+    msg.className='msg win';
+    msg.textContent=`🎉 ${num}! ${desc} — +${profit} ₽`;
+    if(payout>=bet*10)sfx.bigwin();else sfx.win();
+    toast(`🎉 +${profit} ₽`);
+  }else{
+    sfx.lose();
+    msg.className='msg lose';
+    msg.textContent=`😔 ${num} — -${bet} ₽`;
+  }
+  const hist=$('rlHistory');
+  const s=document.createElement('span');
+  s.textContent=num;
+  if(isRed)s.classList.add('h-red');
+  else if(num===0)s.classList.add('h-green');
+  else s.classList.add('h-black');
+  hist.prepend(s);
+  while(hist.children.length>12)hist.lastChild.remove();
+  rlState.active=false;rlState.pick=null;rlState.pickType=null;
+  document.querySelectorAll('.rn').forEach(x=>x.style.pointerEvents='');
+  document.querySelectorAll('#rlQuick button').forEach(x=>x.disabled=false);
+  $('rlSpin').disabled=true;
+  setTimeout(()=>{document.querySelectorAll('.rn').forEach(x=>x.classList.remove('winner'));},2400);
+  // Reset result circle after 2 sec
+  setTimeout(()=>{
+    if(!rlState.active){
+      // keep showing last number, just remove pulse
+    }
+  },2400);
+}
+
+/* ========== КОСТИ ========== */
+const DF=['⚀','⚁','⚂','⚃','⚄','⚅'];
+let diceState={pick:null,rolling:false};
+document.querySelectorAll('#diceBets button').forEach(b=>{
+  b.onclick=()=>{
+    if(diceState.rolling)return;
+    sfx.click();
+    diceState.pick=b.dataset.bet;
+    document.querySelectorAll('#diceBets button').forEach(x=>x.classList.toggle('sel',x.dataset.bet===diceState.pick));
+    $('diceRoll').disabled=false;
+    $('diceMsg').className='msg';
+    $('diceMsg').textContent='Нажмите «Бросить»';
+  };
+});
+$('diceRoll').onclick=()=>{
+  if(diceState.rolling||!diceState.pick){toast('Выберите ставку!');return;}
+  const bet=parseInt($('diceBet').value)||0;
+  if(bet<10){toast('Мин. ставка 10 ₽');return;}
+  if(bet>balance){toast('Недостаточно!');return;}
+  addBalance(-bet);
+  diceState.rolling=true;
+  $('diceRoll').disabled=true;
+  document.querySelectorAll('#diceBets button').forEach(b=>b.disabled=true);
+  $('diceSum').textContent='= ?';
+  $('diceMsg').className='msg';$('diceMsg').textContent='Кости катятся...';
+  const d1=$('die1'),d2=$('die2');
+  d1.classList.add('rolling');d2.classList.add('rolling');
+  sfx.dice();
+  const iv=setInterval(()=>{d1.textContent=DF[Math.floor(Math.random()*6)];d2.textContent=DF[Math.floor(Math.random()*6)];},80);
+  setTimeout(()=>{
+    clearInterval(iv);
+    d1.classList.remove('rolling');d2.classList.remove('rolling');
+    const a=Math.floor(Math.random()*6)+1,b=Math.floor(Math.random()*6)+1;
+    d1.textContent=DF[a-1];d2.textContent=DF[b-1];
+    sfx.diceLand();
+    const sum=a+b;
+    $('diceSum').textContent='= '+sum;
+    resolveDice(a,b,sum,bet);
+  },1400);
+};
+function resolveDice(a,b,sum,bet){
+  diceState.rolling=false;
+  $('diceRoll').disabled=false;
+  document.querySelectorAll('#diceBets button').forEach(x=>x.disabled=false);
+  const msg=$('diceMsg');
+  const p=diceState.pick;
+  let win=false,pay=0,desc='';
+  const isDouble=a===b;
+  switch(p){
+    case'small':if(sum>=2&&sum<=6){win=true;pay=bet*2;desc='Малая';}break;
+    case'big':if(sum>=8&&sum<=12){win=true;pay=bet*2;desc='Большая';}break;
+    case'odd':if(sum%2===1){win=true;pay=bet*2;desc='Нечёт';}break;
+    case'even':if(sum%2===0){win=true;pay=bet*2;desc='Чёт';}break;
+    case'seven':if(sum===7){win=true;pay=bet*5;desc='Сумма 7';}break;
+    case'double':if(isDouble){win=true;pay=bet*8;desc='Дубль';}break;
+    case'snake':if(a===1&&b===1){win=true;pay=bet*30;desc='Змеиные глазки';}break;
+    case'boxcars':if(a===6&&b===6){win=true;pay=bet*30;desc='Бокскары';}break;
+  }
+  if(win){
+    addBalance(pay);
+    const profit=pay-bet;
+    msg.className='msg win';
+    msg.textContent=`🎉 ${a} + ${b} = ${sum} — ${desc}! +${profit} ₽`;
+    if(pay>=bet*8)sfx.bigwin();else sfx.win();
+    toast(`🎉 +${profit} ₽`);
+  }else{
+    sfx.lose();
+    msg.className='msg lose';
+    msg.textContent=`😔 ${a} + ${b} = ${sum} — -${bet} ₽`;
+  }
+  diceState.pick=null;
+  document.querySelectorAll('#diceBets button').forEach(x=>x.classList.remove('sel'));
+  $('diceRoll').disabled=true;
+}
+
+/* ========== КЕНО ========== */
+const KS=40,KP=5,KD=8,PAY={5:2000,4:75,3:6,2:1};
+let kenoState={picked:new Set(),drawn:new Set(),active:false};
+function buildKeno(){
+  const b=$('kenoBoard');b.innerHTML='';
+  for(let i=1;i<=KS;i++){
+    const n=document.createElement('div');
+    n.className='keno-num';n.dataset.num=i;n.textContent=i;
+    n.onclick=()=>toggleKeno(i);
+    b.appendChild(n);
+  }
+}
+buildKeno();
+function toggleKeno(num){
+  if(kenoState.active)return;
+  sfx.click();
+  if(kenoState.picked.has(num))kenoState.picked.delete(num);
+  else{if(kenoState.picked.size>=KP){toast(`Только ${KP} чисел`);return;}kenoState.picked.add(num);}
+  updateKenoUI();
+}
+function updateKenoUI(){
+  document.querySelectorAll('.keno-num').forEach(el=>{
+    const n=parseInt(el.dataset.num);
+    el.classList.remove('picked','drawn','hit');
+    if(kenoState.drawn.has(n)){if(kenoState.picked.has(n))el.classList.add('hit');else el.classList.add('drawn');}
+    else if(kenoState.picked.has(n))el.classList.add('picked');
+  });
+  $('kenoPicked').textContent=`${kenoState.picked.size} / ${KP}`;
+  $('kenoDraw').disabled=kenoState.picked.size!==KP||kenoState.active;
+}
+$('kenoClear').onclick=()=>{
+  if(kenoState.active)return;
+  sfx.click();
+  kenoState.picked.clear();kenoState.drawn.clear();
+  $('kenoHits').textContent='—';$('kenoPay').textContent='—';
+  updateKenoUI();
+  $('kenoMsg').className='msg';
+  $('kenoMsg').textContent='Совпадения: 5/5 → ×2000 • 4/5 → ×75 • 3/5 → ×6 • 2/5 → ×1';
+};
+$('kenoDraw').onclick=()=>{
+  if(kenoState.active)return;
+  if(kenoState.picked.size!==KP){toast(`Выберите ${KP} чисел!`);return;}
+  const bet=parseInt($('kenoBet').value)||0;
+  if(bet<10){toast('Мин. ставка 10 ₽');return;}
+  if(bet>balance){toast('Недостаточно!');return;}
+  addBalance(-bet);
+  kenoState.active=true;
+  kenoState.drawn.clear();
+  $('kenoDraw').disabled=true;
+  $('kenoMsg').className='msg';$('kenoMsg').textContent='Разыгрываем 8 чисел...';
+  const pool=[];
+  for(let i=1;i<=KS;i++)pool.push(i);
+  const drawn=pool.sort(()=>Math.random()-0.5).slice(0,KD);
+  let i=0;
+  const iv=setInterval(()=>{
+    kenoState.drawn.add(drawn[i]);
+    sfx.dice();
+    updateKenoUI();
+    i++;
+    if(i>=drawn.length){clearInterval(iv);setTimeout(()=>finishKeno(bet),500);}
+  },320);
+};
+function finishKeno(bet){
+  kenoState.active=false;
+  const hits=[...kenoState.picked].filter(n=>kenoState.drawn.has(n)).length;
+  const mult=PAY[hits]||0;
+  const pay=Math.round(bet*mult);
+  const msg=$('kenoMsg');
+  $('kenoHits').textContent=`${hits} / ${KP}`;
+  $('kenoPay').textContent=pay>0?`+${pay-bet} ₽`:`-${bet} ₽`;
+  if(pay>0){
+    addBalance(pay);
+    const profit=pay-bet;
+    msg.className='msg win';
+    msg.textContent=`🎉 Совпало ${hits} из ${KP}! +${profit} ₽`;
+    if(hits>=4)sfx.bigwin();else sfx.win();
+    toast(`🎟️ +${profit} ₽`);
+  }else{
+    sfx.lose();
+    msg.className='msg lose';
+    msg.textContent=`😔 Совпало ${hits} — -${bet} ₽`;
+  }
+  const hist=$('kenoHistory');
+  const s=document.createElement('span');
+  s.textContent=`${hits}/${KP}`;
+  if(hits>=3)s.className='hi';
+  hist.prepend(s);
+  while(hist.children.length>12)hist.lastChild.remove();
+  setTimeout(()=>{kenoState.picked.clear();kenoState.drawn.clear();updateKenoUI();},2000);
+}
+updateKenoUI();
+
+/* ========== КРАШ ========== */
+let crState='idle',crBet=0,crCrashPoint=0,crStartTime=0,crCurrentMult=1,crRafId=null;
+function crGenCrash(){const r=Math.random();let c=0.97/(1-r);if(c<1.01)c=1.01;return Math.min(c,500);}
+function crReset(){cancelAnimationFrame(crRafId);crState='idle';crCurrentMult=1;$('crMult').textContent='1.00x';$('crMult').className='crash-display';$('crStart').disabled=false;$('crCash').disabled=true;$('crRocket').style.left='0%';$('crRocket').style.bottom='0%';$('crTrail').style.width='0%';}
+function crStart(){if(crState==='running')return;const bet=parseInt($('crBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.spin();crBet=bet;crCrashPoint=crGenCrash();crStartTime=performance.now();crCurrentMult=1;crState='running';$('crStart').disabled=true;$('crCash').disabled=false;$('crMsg').className='msg';$('crMsg').textContent='🚀 Летим...';$('crMult').className='crash-display';$('crRocket').textContent='🚀';$('crRocket').style.left='0%';$('crRocket').style.bottom='0%';$('crTrail').style.width='0%';crRafId=requestAnimationFrame(crTick);}
+function crTick(){if(crState!=='running')return;const el=performance.now()-crStartTime;crCurrentMult=Math.pow(1.14,el/1000);if(crCurrentMult>=crCrashPoint){crCurrentMult=crCrashPoint;crState='crashed';$('crMult').textContent=crCurrentMult.toFixed(2)+'x';$('crMult').className='crash-display crashed';$('crMsg').className='msg lose';$('crMsg').textContent=`💥 Краш ${crCrashPoint.toFixed(2)}x — -${crBet} ₽`;sfx.lose();addCrashHistory(crCrashPoint,false);$('crStart').disabled=false;$('crCash').disabled=true;$('crRocket').textContent='💥';setTimeout(()=>{if(crState==='crashed')$('crRocket').textContent='🚀';},1400);return;}$('crMult').textContent=crCurrentMult.toFixed(2)+'x';const p=Math.min(1,Math.log(crCurrentMult)/Math.log(50));$('crRocket').style.left=(p*88+4)+'%';$('crRocket').style.bottom=(p*75+12)+'%';$('crTrail').style.width=(p*88+4)+'%';crRafId=requestAnimationFrame(crTick);}
+function crCash(){if(crState!=='running')return;cancelAnimationFrame(crRafId);crState='cashed';const win=Math.round(crBet*crCurrentMult);addBalance(win);$('crMult').className='crash-display cashed';$('crMsg').className='msg win';$('crMsg').textContent=`💰 ×${crCurrentMult.toFixed(2)} — +${win} ₽`;if(crCurrentMult>=3)sfx.bigwin();else sfx.win();addCrashHistory(crCurrentMult,true);toast(`💰 +${win} ₽ ×${crCurrentMult.toFixed(2)}`);$('crStart').disabled=false;$('crCash').disabled=true;}
+function addCrashHistory(v,hi){const h=$('crHistory');const s=document.createElement('span');s.textContent=v.toFixed(2)+'x';if(hi||v>=2)s.className='hi';h.prepend(s);while(h.children.length>14)h.lastChild.remove();}
+$('crStart').onclick=crStart;$('crCash').onclick=crCash;crReset();
+
+/* ========== КОЛЕСО ========== */
+const WHEEL=[{m:2},{m:3},{m:2},{m:10},{m:5},{m:2},{m:3},{m:2},{m:20},{m:3},{m:2},{m:5},{m:3},{m:2},{m:10},{m:3},{m:2},{m:5},{m:2},{m:3}];
+const MCOL={2:'#27ae60',3:'#2980b9',5:'#9b59b6',10:'#e67e22',20:'#d4af37'};
+const MCH={2:8,3:6,5:3,10:2,20:1};
+const SD=360/WHEEL.length,RO=150;
+let wRot=0,wSpin=false,wPick=null;
+function polar(r,a){const rad=(a-90)*Math.PI/180;return[r*Math.cos(rad),r*Math.sin(rad)];}
+function buildWheelSvg(){const svg=$('wheelSvg');svg.innerHTML='';const bg=document.createElementNS(SVG_NS,'circle');bg.setAttribute('cx',0);bg.setAttribute('cy',0);bg.setAttribute('r',RO);bg.setAttribute('fill','#0a120d');svg.appendChild(bg);WHEEL.forEach((s,i)=>{const a0=i*SD,a1=(i+1)*SD;const[x1,y1]=polar(RO,a0),[x2,y2]=polar(RO,a1);const p=document.createElementNS(SVG_NS,'path');p.setAttribute('d',`M 0 0 L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${RO} ${RO} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`);p.setAttribute('fill',MCOL[s.m]);p.setAttribute('stroke','#0a120d');p.setAttribute('stroke-width','2');p.dataset.mult=s.m;svg.appendChild(p);const[tx,ty]=polar(RO*.66,a0+SD/2);const t=document.createElementNS(SVG_NS,'text');t.setAttribute('x',tx.toFixed(2));t.setAttribute('y',ty.toFixed(2));t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');t.setAttribute('fill','#fff');t.setAttribute('font-size','15');t.setAttribute('font-weight','900');t.setAttribute('pointer-events','none');t.textContent='×'+s.m;svg.appendChild(t);});const r=document.createElementNS(SVG_NS,'circle');r.setAttribute('cx',0);r.setAttribute('cy',0);r.setAttribute('r',RO-1);r.setAttribute('fill','none');r.setAttribute('stroke','#ffe58a');r.setAttribute('stroke-width','3');svg.appendChild(r);const c=document.createElementNS(SVG_NS,'circle');c.setAttribute('cx',0);c.setAttribute('cy',0);c.setAttribute('r',30);c.setAttribute('fill','#12180f');c.setAttribute('stroke','#d4af37');c.setAttribute('stroke-width','5');svg.appendChild(c);const st=document.createElementNS(SVG_NS,'text');st.setAttribute('x',0);st.setAttribute('y',0);st.setAttribute('text-anchor','middle');st.setAttribute('dominant-baseline','central');st.setAttribute('fill','#ffd75e');st.setAttribute('font-size','28');st.setAttribute('font-weight','900');st.textContent='★';svg.appendChild(st);}
+function highlightWheelSegments(){const paths=$('wheelSvg').querySelectorAll('path[data-mult]');paths.forEach(p=>{const m=parseInt(p.dataset.mult);if(wPick&&m===wPick){p.setAttribute('stroke','#ffe58a');p.setAttribute('stroke-width','4');p.style.filter='brightness(1.35) drop-shadow(0 0 6px #ffd75e)';}else{p.setAttribute('stroke','#0a120d');p.setAttribute('stroke-width','2');p.style.filter='';}});}
+function buildWheelPicker(){const p=$('wheelPicker');p.innerHTML='';[2,3,5,10,20].forEach(m=>{const b=document.createElement('button');b.dataset.mult=m;if(wPick===m)b.classList.add('sel');b.innerHTML=`<span class="mult">×${m}</span><span class="chance">${MCH[m]}/20</span>`;b.onclick=()=>{if(wSpin)return;sfx.click();wPick=m;buildWheelPicker();highlightWheelSegments();$('whSpin').disabled=false;$('whMsg').className='msg';$('whMsg').textContent=`Ставка на ×${m}. Крутите!`;};p.appendChild(b);});}
+buildWheelSvg();buildWheelPicker();
+$('whSpin').disabled=true;
+$('whSpin').onclick=()=>{
+  if(wSpin)return;
+  if(!wPick){toast('Выберите множитель!');return;}
+  const bet=parseInt($('whBet').value)||0;
+  if(bet<10){toast('Мин. ставка 10 ₽');return;}
+  if(bet>balance){toast('Недостаточно!');return;}
+  addBalance(-bet);sfx.spin();
+  wSpin=true;$('whSpin').disabled=true;
+  document.querySelectorAll('#wheelPicker button').forEach(b=>b.disabled=true);
+  const wrap=$('wheelWrap');wrap.classList.remove('win');wrap.classList.add('spinning');
+  $('whMsg').className='msg';$('whMsg').textContent=`Крутим... на ×${wPick}`;
+  const idx=Math.floor(Math.random()*WHEEL.length);
+  const midA=idx*SD+SD/2;
+  const jitter=(Math.random()-.5)*(SD*.6);
+  const targetMod=((-midA+jitter)%360+360)%360;
+  const currentMod=((wRot%360)+360)%360;
+  let delta=targetMod-currentMod;
+  if(delta<0)delta+=360;
+  wRot+=(6+Math.floor(Math.random()*3))*360+delta;
+  $('wheelSvg').style.transform=`rotate(${wRot}deg)`;
+  setTimeout(()=>{
+    wSpin=false;$('whSpin').disabled=false;
+    document.querySelectorAll('#wheelPicker button').forEach(b=>b.disabled=false);
+    wrap.classList.remove('spinning');
+    const lm=WHEEL[idx].m;
+    if(lm===wPick){
+      const win=Math.round(bet*wPick);
+      addBalance(win);
+      $('whMsg').className='msg win';
+      $('whMsg').textContent=`🎉 ×${lm}! +${win} ₽`;
+      if(wPick>=5)sfx.bigwin();else sfx.win();
+      toast(`🎉 ×${wPick} = +${win} ₽`);
+      if(wPick>=5)wrap.classList.add('win');
+    }else{
+      sfx.lose();
+      $('whMsg').className='msg lose';
+      $('whMsg').textContent=`😔 Выпало ×${lm}. -${bet} ₽`;
+    }
+  },6100);
+};
+
+/* ========== ПЛИНКО ========== */
+const PM={low:{8:[5.6,2.1,1.1,1,.5,1,1.1,2.1,5.6],12:[10,3,1.6,1.4,1.1,1,.5,1,1.1,1.4,1.6,3,10],16:[16,9,2,1.4,1.4,1.2,1.1,1,.5,1,1.1,1.2,1.4,1.4,2,9,16]},mid:{8:[13,3,1.3,.7,.4,.7,1.3,3,13],12:[33,11,4,2,1.1,.6,.3,.6,1.1,2,4,11,33],16:[110,41,10,5,3,1.5,1,.5,.3,.5,1,1.5,3,5,10,41,110]},high:{8:[29,4,1.5,.3,.2,.3,1.5,4,29],12:[170,24,8.1,2,.7,.2,.2,.2,.7,2,8.1,24,170],16:[1000,130,26,9,4,2,.2,.2,.2,.2,.2,2,4,9,26,130,1000]}};
+const PR=4.5,BR=7,GR=.28,AD=.999,BO=.55,RN=.45;
+let plBalls=[],plAnim=null,plLast=0;
+function plMults(){return PM[$('plRisk').value][parseInt($('plRows').value)];}
+function plGeom(){const c=$('plCanvas');const rows=parseInt($('plRows').value);const W=c.width,H=c.height;const tp=40,bp=58,sp=22;const lw=sp,rw=W-sp;const rh=(H-tp-bp)/rows;const pegs=[];for(let r=0;r<rows;r++){const n=r+2;const y=tp+r*rh+rh/2;const g=(rw-lw)/(n-1);for(let p=0;p<n;p++)pegs.push({x:lw+g*p,y,r:PR});}const ns=rows+1;const sy=H-bp,sh=bp,sg=(rw-lw)/ns;const ms=plMults();const sl=[];for(let i=0;i<ns;i++)sl.push({x0:lw+sg*i,x1:lw+sg*(i+1),cx:lw+sg*(i+.5),y:sy,h:sh,mult:ms[i]!==undefined?ms[i]:ms[ms.length-1]});return{W,H,rows,tp,bp,lw,rw,pegs,slots:sl,sy,sh,rh};}
+function plResize(){$('plCanvas').height=50+parseInt($('plRows').value)*27+55;}
+function plDraw(){const c=$('plCanvas');const ctx=c.getContext('2d');const g=plGeom();const{W,H,pegs,slots,sy,lw,rw}=g;const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#071118');bg.addColorStop(1,'#03080a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);ctx.fillStyle='rgba(30,52,56,.6)';ctx.fillRect(0,0,lw,H);ctx.fillRect(rw,0,W-rw,H);slots.forEach(s=>{const m=s.mult;const lo=m<1,hi=m>=3;const f=hi?'#3a1010':(lo?'#0a2418':'#241e08');const st=hi?'#ff6b6b':(lo?'#2ecc71':'#d4af37');const tx=hi?'#ff9a9a':(lo?'#5dff9a':'#ffd75e');ctx.fillStyle=f;ctx.fillRect(s.x0+1,sy,s.x1-s.x0-2,s.h);ctx.strokeStyle=st;ctx.lineWidth=1.5;ctx.strokeRect(s.x0+1,sy,s.x1-s.x0-2,s.h);ctx.fillStyle=tx;ctx.font='bold 12px Segoe UI, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('×'+m,s.cx,sy+s.h/2);});pegs.forEach(p=>{const gr=ctx.createRadialGradient(p.x-1,p.y-1,.5,p.x,p.y,p.r);gr.addColorStop(0,'#a8c8b4');gr.addColorStop(1,'#3a5a44');ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();ctx.strokeStyle='#8aaa94';ctx.lineWidth=.8;ctx.stroke();});plBalls.forEach(b=>{const gr=ctx.createRadialGradient(b.x-2.5,b.y-2.5,1,b.x,b.y,b.r);gr.addColorStop(0,'#fff7c9');gr.addColorStop(.5,'#ffd75e');gr.addColorStop(1,'#a87a1a');ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle=gr;ctx.shadowColor='rgba(255,215,94,.7)';ctx.shadowBlur=14;ctx.fill();ctx.shadowBlur=0;});}
+function plStep(b){if(b.landed)return;const g=plGeom();const{lw,rw,pegs,slots,sy}=g;b.vy+=GR;b.vx*=AD;b.vy*=AD;if(b.vx>5)b.vx=5;if(b.vx<-5)b.vx=-5;if(b.vy>7)b.vy=7;b.x+=b.vx;b.y+=b.vy;if(b.x-b.r<lw){b.x=lw+b.r;b.vx=Math.abs(b.vx)*BO*.5;}if(b.x+b.r>rw){b.x=rw-b.r;b.vx=-Math.abs(b.vx)*BO*.5;}for(let i=0;i<pegs.length;i++){const p=pegs[i];const dx=b.x-p.x,dy=b.y-p.y;const d2=dx*dx+dy*dy;const md=b.r+p.r;if(d2<md*md&&d2>1e-4){const d=Math.sqrt(d2);const nx=dx/d,ny=dy/d;b.x=p.x+nx*md;b.y=p.y+ny*md;const vn=b.vx*nx+b.vy*ny;if(vn<0){b.vx-=(1+BO)*vn*nx;b.vy-=(1+BO)*vn*ny;b.vx+=(Math.random()-.5)*RN*2;if(Math.abs(b.vx)<.35)b.vx+=(Math.random()<.5?-1:1)*.5;sfx.peg();}}}if(b.y+b.r>=sy){b.landed=true;b.vy=0;b.vx=0;let si=0;for(let i=0;i<slots.length;i++){if(b.x>=slots[i].x0&&b.x<slots[i].x1){si=i;break;}}if(b.x<slots[0].x0)si=0;if(b.x>=slots[slots.length-1].x1)si=slots.length-1;b.si=si;b.lt=35;const m=slots[si].mult;const pay=Math.round(b.bet*m);addBalance(pay);const profit=pay-b.bet;const msg=$('plMsg');if(profit>0){msg.className='msg win';msg.textContent=`🎉 ×${m} — +${profit} ₽`;if(m>=5)sfx.bigwin();else sfx.win();toast(`🎉 ×${m} = +${profit} ₽`);}else if(profit===0){msg.className='msg';msg.textContent=`×${m} — возврат`;sfx.coin();}else{msg.className='msg lose';msg.textContent=`×${m} — -${b.bet} ₽`;sfx.lose();}const h=$('plHistory');const s=document.createElement('span');s.textContent='×'+m;if(m>=3)s.className='hi';h.prepend(s);while(h.children.length>14)h.lastChild.remove();}}
+function plTick(ts){if(plBalls.length===0){plAnim=null;plDraw();return;}const dt=Math.min(ts-plLast,34);plLast=ts;const ss=Math.max(1,Math.round(dt/16));for(let i=plBalls.length-1;i>=0;i--){const b=plBalls[i];if(b.lt!==undefined){b.lt--;if(b.lt<=0){plBalls.splice(i,1);continue;}}else{for(let s=0;s<ss&&!b.landed;s++)plStep(b);}}plDraw();plAnim=requestAnimationFrame(plTick);}
+function plDrop(){const bet=parseInt($('plBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return false;}if(bet>balance){toast('Недостаточно!');return false;}addBalance(-bet);sfx.drop();const W=$('plCanvas').width;const sx=W/2+(Math.random()-.5)*6;plBalls.push({x:sx,y:12,vx:(Math.random()-.5)*.6,vy:0,r:BR,bet,landed:false});if(!plAnim){plLast=performance.now();plAnim=requestAnimationFrame(plTick);}return true;}
+function plInit(){plResize();plDraw();$('plRisk').onchange=()=>{plResize();plDraw();};$('plRows').onchange=()=>{plResize();plDraw();};$('plDrop').onclick=()=>{sfx.click();plDrop();};$('plAuto').onclick=async()=>{const b=$('plAuto');if(b.disabled)return;b.disabled=true;for(let i=0;i<10;i++){if(!plDrop())break;await new Promise(r=>setTimeout(r,280));}b.disabled=false;};}
+plInit();
+
+/* ========== HI-LO ========== */
+const HR={'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+let hlState={deck:[],current:null,streak:0,active:false,bet:0};
+function hlMult(s){return .97/Math.pow(.5,s);}
+function hlDraw(){if(hlState.deck.length<5)hlState.deck=freshDeck();return hlState.deck.pop();}
+function hlRender(c,id,h){const b=$(id);b.innerHTML='';if(c)b.appendChild(makeCard(c,h));}
+function hlStats(){const m=hlState.streak>0?hlMult(hlState.streak):1;$('hlStreak').textContent='×'+m.toFixed(2);$('hlCount').textContent=hlState.streak;$('hlWin').textContent=hlState.streak>0?Math.round(hlState.bet*m)+' ₽':'0 ₽';$('hlBetV').textContent=hlState.bet+' ₽';}
+$('hlStart').onclick=()=>{if(hlState.active)return;const bet=parseInt($('hlBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.deal();hlState={deck:freshDeck(),current:null,streak:0,active:true,bet};hlState.current=hlDraw();hlRender(hlState.current,'hlCurrentCard',false);hlRender(null,'hlNextCard',false);hlStats();$('hlStart').disabled=true;$('hlHigh').disabled=false;$('hlLow').disabled=false;$('hlCash').disabled=true;$('hlMsg').className='msg';$('hlMsg').textContent=`Текущая: ${hlState.current.rank}. Больше или меньше?`;};
+function hlGuess(dir){if(!hlState.active)return;$('hlHigh').disabled=true;$('hlLow').disabled=true;const next=hlDraw();hlRender(next,'hlNextCard',false);sfx.cardHit();const cur=HR[hlState.current.rank],nxt=HR[next.rank];const msg=$('hlMsg');let ok=false;if(dir==='high'&&nxt>cur)ok=true;if(dir==='low'&&nxt<cur)ok=true;if(ok){hlState.streak++;hlState.current=next;hlStats();msg.className='msg win';msg.textContent=`✅ ${next.rank} — угадали! Серия: ${hlState.streak}`;sfx.coin();$('hlHigh').disabled=false;$('hlLow').disabled=false;$('hlCash').disabled=false;}else{hlState.active=false;sfx.lose();msg.className='msg lose';msg.textContent=nxt===cur?`🟰 Ничья (${next.rank}) — -${hlState.bet} ₽`:`❌ ${next.rank} — -${hlState.bet} ₽`;$('hlStart').disabled=false;$('hlHigh').disabled=true;$('hlLow').disabled=true;$('hlCash').disabled=true;setTimeout(()=>{hlRender(null,'hlCurrentCard',false);hlRender(null,'hlNextCard',false);},2200);}}
+$('hlHigh').onclick=()=>hlGuess('high');$('hlLow').onclick=()=>hlGuess('low');
+$('hlCash').onclick=()=>{if(!hlState.active||hlState.streak===0)return;const m=hlMult(hlState.streak);const win=Math.round(hlState.bet*m);addBalance(win);sfx.win();$('hlMsg').className='msg win';$('hlMsg').textContent=`💰 ×${m.toFixed(2)} = +${win} ₽`;toast(`💰 +${win} ₽`);hlState.active=false;$('hlStart').disabled=false;$('hlHigh').disabled=true;$('hlLow').disabled=true;$('hlCash').disabled=true;};
+hlStats();
+
+/* ========== СКАЧКИ ========== */
+const HE=['🐎','🏇','🐴','🦄','🎠'],HN=['Гроза','Вихрь','Молния','Буран','Комета'],HO=[2,3,4,6,10];
+let hs={odds:[],positions:[0,0,0,0,0],running:false,pick:-1,rafId:null,bet:0,winner:0,targetTimes:[],startTime:0};
+function hsBuildTrack(){const t=$('track');t.innerHTML='';for(let i=0;i<5;i++){const l=document.createElement('div');l.className='lane';l.innerHTML=`<span class="lane-num">${i+1}</span><div class="progress-bar" id="hsProg${i}"></div><div class="finish-line"></div><div class="lane-odds" id="hsOdds${i}">×${hs.odds[i]||'?'}</div><div class="horse" id="hsHorse${i}">${HE[i]}</div>`;t.appendChild(l);}}
+function hsShuffle(){hs.odds=[...HO].sort(()=>Math.random()-.5);hs.positions=[0,0,0,0,0];hsBuildTrack();hsBuildPick();}
+function hsBuildPick(){const p=$('horsePick');p.innerHTML='';for(let i=0;i<5;i++){const b=document.createElement('button');b.textContent=`${HE[i]} ${HN[i]} ×${hs.odds[i]}`;if(hs.pick===i)b.classList.add('sel');b.onclick=()=>{if(hs.running)return;sfx.click();hs.pick=i;hsBuildPick();};p.appendChild(b);}}
+function hsPickWinner(){const w=hs.odds.map(o=>1/o);const t=w.reduce((a,b)=>a+b,0);let r=Math.random()*t;for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return i;}return w.length-1;}
+hsShuffle();
+$('hsStart').onclick=()=>{if(hs.running)return;if(hs.pick<0){toast('Выберите лошадь!');return;}const bet=parseInt($('hsBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.spin();hs.bet=bet;hs.running=true;hs.positions=[0,0,0,0,0];hs.winner=hsPickWinner();const dur=5.5+Math.random()*1.5;hs.targetTimes=new Array(5);hs.targetTimes[hs.winner]=dur;const o=[0,1,2,3,4].filter(i=>i!==hs.winner);let dl=.4+Math.random()*.5;o.forEach(idx=>{hs.targetTimes[idx]=dur+dl;dl+=.3+Math.random()*.7;});hs.startTime=performance.now();$('hsStart').disabled=true;$('hsMsg').className='msg';$('hsMsg').textContent='🏁 Забег!';for(let i=0;i<5;i++){const h=$('hsHorse'+i);if(h)h.style.left='2%';const p=$('hsProg'+i);if(p)p.style.width='0%';}hs.rafId=requestAnimationFrame(hsTick);};
+function hsTick(){if(!hs.running)return;const e=(performance.now()-hs.startTime)/1000;let fin=-1;for(let i=0;i<5;i++){let pct=(e/hs.targetTimes[i])*100;const w=Math.sin(e*(2.5+i*.7))*.8;pct=Math.min(100,pct+w);hs.positions[i]=pct;const hEl=$('hsHorse'+i),pEl=$('hsProg'+i);if(hEl)hEl.style.left=`calc(${pct*.86+2}%)`;if(pEl)pEl.style.width=pct+'%';if(pct>=100&&fin===-1)fin=i;}if(fin>=0){hs.running=false;$('hsStart').disabled=false;const msg=$('hsMsg');if(fin===hs.pick){const win=Math.round(hs.bet*hs.odds[fin]);addBalance(win);msg.className='msg win';msg.textContent=`🏆 ${HN[fin]}! +${win} ₽`;if(hs.odds[fin]>=6)sfx.bigwin();else sfx.win();toast(`🏆 +${win} ₽`);}else{sfx.lose();msg.className='msg lose';msg.textContent=`🏁 ${HN[fin]} (×${hs.odds[fin]}). -${hs.bet} ₽`;}hs.pick=-1;setTimeout(()=>{if(!hs.running)hsShuffle();},2600);return;}hs.rafId=requestAnimationFrame(hsTick);}
+
+/* ========== САПЁР ========== */
+let mn={active:false,mines:new Set(),revealed:new Set(),bet:0,count:3};
+function mnBuild(){const g=$('mineGrid');g.innerHTML='';for(let i=0;i<25;i++){const t=document.createElement('div');t.className='tile';t.dataset.i=i;t.onclick=()=>mnReveal(i);g.appendChild(t);}}
+function mnMult(n,m,k){let p=1;for(let i=0;i<k;i++)p*=(n-m-i)/(n-i);return .97/p;}
+function mnStats(){const r=mn.revealed.size;const m=mnMult(25,mn.count,r);const nm=mnMult(25,mn.count,r+1);$('mnMult').textContent=m.toFixed(2)+'x';$('mnNext').textContent=nm.toFixed(2)+'x';$('mnWin').textContent=Math.round(mn.bet*m)+' ₽';}
+$('mnStart').onclick=()=>{if(mn.active)return;const bet=parseInt($('mnBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.deal();mn.bet=bet;mn.count=parseInt($('mnCount').value);mn.mines=new Set();mn.revealed=new Set();mn.active=true;while(mn.mines.size<mn.count)mn.mines.add(Math.floor(Math.random()*25));mnBuild();mnStats();$('mnStart').disabled=true;$('mnCash').disabled=false;$('mnCount').disabled=true;$('mnMsg').className='msg';$('mnMsg').textContent=`Игра идёт. Мин: ${mn.count}.`;};
+function mnReveal(i){if(!mn.active||mn.revealed.has(i))return;const tile=document.querySelector(`.tile[data-i="${i}"]`);if(!tile)return;if(mn.mines.has(i)){mn.active=false;sfx.lose();document.querySelectorAll('.tile').forEach((t,idx)=>{t.classList.add('revealed');if(mn.mines.has(idx)){t.classList.add('mine');t.textContent='💥';}else if(mn.revealed.has(idx)){t.textContent='💎';t.classList.add('safe');}});$('mnMsg').className='msg lose';$('mnMsg').textContent=`💥 Мина! -${mn.bet} ₽`;$('mnStart').disabled=false;$('mnCash').disabled=true;$('mnCount').disabled=false;return;}mn.revealed.add(i);tile.classList.add('revealed','safe');tile.textContent='💎';sfx.coin();mnStats();if(mn.revealed.size===25-mn.count)mnCash();}
+$('mnCash').onclick=mnCash;
+function mnCash(){if(!mn.active)return;mn.active=false;const m=mnMult(25,mn.count,mn.revealed.size);const win=Math.round(mn.bet*m);addBalance(win);sfx.win();$('mnMsg').className='msg win';$('mnMsg').textContent=`💰 ×${m.toFixed(2)} — +${win} ₽`;toast(`💰 +${win} ₽`);$('mnStart').disabled=false;$('mnCash').disabled=true;$('mnCount').disabled=false;document.querySelectorAll('.tile').forEach((t,idx)=>{if(mn.mines.has(idx)&&!t.classList.contains('revealed')){t.classList.add('revealed','mine');t.textContent='💣';}});}
+mnBuild();
+
+/* ========== СЛОТЫ ========== */
+const SY=['🍒','🍋','🔔','⭐','💎','7️⃣'],PY={'7️⃣':50,'💎':25,'⭐':15,'🔔':10,'🍋':6,'🍒':4};
+let slSpin=false;
+$('slSpin').onclick=()=>{if(slSpin)return;const bet=parseInt($('slBet').value)||0;if(bet<10){toast('Мин. ставка 10 ₽');return;}if(bet>balance){toast('Недостаточно!');return;}addBalance(-bet);sfx.spin();slSpin=true;$('slSpin').disabled=true;$('slMsg').className='msg';$('slMsg').textContent='Крутим...';const reels=[$('r0'),$('r1'),$('r2')];reels.forEach(r=>r.classList.add('spin'));const fin=[0,1,2].map(()=>SY[Math.floor(Math.random()*SY.length)]);const sh=setInterval(()=>{reels.forEach(r=>r.textContent=SY[Math.floor(Math.random()*SY.length)]);},70);let st=0;[0,1,2].forEach(i=>{setTimeout(()=>{reels[i].classList.remove('spin');reels[i].textContent=fin[i];st++;if(st===3){clearInterval(sh);reels.forEach((r,j)=>r.textContent=fin[j]);slFinish(fin,bet);}},700+i*450);});};
+function slFinish(res,bet){slSpin=false;$('slSpin').disabled=false;const msg=$('slMsg');const[a,b,c]=res;let pay=0,label='';if(a===b&&b===c){pay=PY[a]||0;label=`ТРИ ${a}!`;}else if(a===b||b===c||a===c){const s=(a===b)?a:(b===c?b:a);if(['🍒','🍋'].includes(s)){pay=2;label=`Две ягоды ${s}`;}else{pay=1;label=`Пара ${s}`;}}if(pay>0){const win=bet*pay;addBalance(win);if(pay>=15)sfx.bigwin();else sfx.win();msg.className='msg win';msg.textContent=`${label} — ${pay}x = +${win} ₽`;toast(`🎰 +${win} ₽`);}else{sfx.lose();msg.className='msg lose';msg.textContent=`-${bet} ₽`;}}
+
+/* ========== СТАРТ ========== */
+renderBJ(false);
+saveProgress();
+</script>
+</body>
+</html>
